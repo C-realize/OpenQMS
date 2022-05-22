@@ -1,0 +1,92 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model OpenQMS.Models.Training
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var policies = (List<AppDocument>)ViewData["Policies"];
+    var trainer = (List<AppUser>)ViewData["Trainer"];
+}
+
+<h1>Edit</h1>
+
+<h4>Training</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="PolicyTitle" />
+            <input type="hidden" asp-for="TrainerEmail" />
+            <input type="hidden" asp-for="Trainees" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Date" class="control-label"></label>
+                <input asp-for="Date" class="form-control" />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Policy</label>
+                <select asp-for="PolicyId" class="form-control" asp-items='new SelectList(policies,"Id","Title")'>
+                </select>
+                <span asp-validation-for="PolicyId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Trainer</label>
+                <select asp-for="TrainerId" class="form-control" asp-items='new SelectList(trainer,"Id","Email")'>
+                </select>
+                <span asp-validation-for="TrainerId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <label>Trainees</label>
+                    <table>
+                        <tr>
+                            @{
+                                int cnt = 0;
+                                List<OpenQMS.Models.ViewModels.AssignedTrainees> assignedTrainees = ViewBag.Trainees;
+
+                                foreach (var trainee in assignedTrainees)
+                                {
+                                    //if (cnt++ % 3 == 0)
+                                    {
+                                        @:</tr><tr>
+                                    }
+                                    @:<td>
+                                        <input type="checkbox"
+                                            name="selectedTrainees"
+                                            value="@trainee.UserID"
+                                            @(Html.Raw(trainee.Assigned ? "checked=\"checked\"" : "")) />
+                                            @:  @trainee.Email
+                                    @:</td>
+                                }
+                                @:</tr>
+                            }
+                    </table>
+                </div>
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

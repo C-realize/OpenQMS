@@ -1,0 +1,83 @@
+﻿@model IEnumerable<OpenQMS.Models.Training>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<h4>Trainings</h4>
+<hr />
+
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find by Name: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+            <input type="submit" value="Search" class="btn btn-default" /> |
+            <a asp-action="Index">Back to Full List</a>
+        </p>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]">Name</a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]">Date</a>
+            </th>
+            <th>
+                Policy
+            </th>
+            <th>
+                Trainer
+            </th>
+            <th>
+                Trainee
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) 
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PolicyTitle)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TrainerEmail)
+                </td>
+                <td>
+                    @if(User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <text> | </text>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if(User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
+                    {
+                        <text> | </text>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if(User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+}

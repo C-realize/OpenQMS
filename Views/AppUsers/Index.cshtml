@@ -1,0 +1,49 @@
+﻿@using OpenQMS.Models.ViewModels
+@model IEnumerable<UserRolesViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<h4>Users</h4>
+<hr />
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Email
+            </th>
+            <th>
+                Role
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Roles)
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+@if(User.IsInRole(Constants.AdministratorsRole))
+{
+    <p>
+        <a asp-area="Identity" asp-page="/Account/Register">Create New</a>
+    </p>
+}

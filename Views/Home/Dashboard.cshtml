@@ -1,0 +1,32 @@
+﻿@model IEnumerable<OpenQMS.Models.ViewModels.AuthoredOnGroup>
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2>Dashboard</h2>
+
+<hr />
+
+<table>
+    <tr>
+        <th style="text-align:center">
+            Date
+        </th>
+        <th style="text-align:center">
+            Documents Authored
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                <center>@Html.DisplayFor(modelItem => item.AuthoredOn)</center>
+            </td>
+            <td>
+                <center>@item.DocumentCount</center>
+            </td>
+        </tr>
+    }
+</table>
