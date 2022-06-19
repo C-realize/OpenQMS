@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenQMS.Authorization;
 using OpenQMS.Data;
 using OpenQMS.Models;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,10 @@ builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireCo
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpenQMS", Version = "v1" });
+});
 builder.Services.AddRazorPages();
 builder.Services.AddAuthorization(options =>
 {
@@ -51,12 +55,20 @@ using (var scope = app.Services.CreateScope())
     await SeedData.Initialize(services, testUserPw);
 }
 
+app.UseSwagger(c =>
+{
+    c.PreSerializeFilters.Add((swagger, httpReq) => {
+        var server = new OpenApiServer() { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" };
+        swagger.Servers = new List<OpenApiServer>() { server };
+        c.SerializeAsV2 = true;
+    });
+});
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OpenQMS.ApiApp v1"));
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
 }
 else
 {

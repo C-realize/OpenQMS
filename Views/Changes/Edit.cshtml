@@ -1,0 +1,66 @@
+﻿@model OpenQMS.Models.Change
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>Change</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Status" />
+            <input type="hidden" asp-for="ProposedBy" />
+            <input type="hidden" asp-for="ProposedOn" />
+            <input type="hidden" asp-for="AssessedBy" />
+            <input type="hidden" asp-for="AssessedOn" />
+            <input type="hidden" asp-for="AcceptedBy" />
+            <input type="hidden" asp-for="AcceptedOn" />
+            @if(@Model.Status == Change.ChangeStatus.Proposal || @Model.Status == Change.ChangeStatus.Assessment)
+            {
+                <div class="form-group">
+                    <label asp-for="Title" class="control-label"></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Proposal" class="control-label"></label>
+                    <input asp-for="Proposal" class="form-control" />
+                    <span asp-validation-for="Proposal" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    Assessment: 
+                    <textarea asp-for="Assessment" class="form-control"></textarea>
+                    <span asp-validation-for="Assessment" class="text-danger"></span>
+                </div>
+            }
+            @if(@Model.Status == Change.ChangeStatus.Accepted || @Model.Status == Change.ChangeStatus.Implementation)
+            {
+                <input type="hidden" asp-for="Title" />
+                <input type="hidden" asp-for="Proposal" />
+                <input type="hidden" asp-for="Assessment" />
+                <div class="form-group">
+                    <label asp-for="Implementation" class="control-label"></label>
+                    <input asp-for="Implementation" class="form-control" />
+                    <span asp-validation-for="Implementation" class="text-danger"></span>
+                </div>
+            }
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

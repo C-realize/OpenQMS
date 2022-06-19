@@ -22,5 +22,7 @@ namespace OpenQMS.Data
 
             modelBuilder.Entity<UserTraining>().HasKey(t => new { t.TraineeId, t.TrainingId });
         }
+
+        public DbSet<OpenQMS.Models.Change>? Change { get; set; }
     }
 }
