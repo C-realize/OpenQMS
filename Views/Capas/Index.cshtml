@@ -1,13 +1,12 @@
-﻿@model IEnumerable<OpenQMS.Models.Change>
+﻿@model IEnumerable<OpenQMS.Models.Capa>
 
 @{
     ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h1>Index</h1>
 
-<h4>Changes</h4>
+<h4>CAPA</h4>
 <hr />
 
 <table class="table">
@@ -17,48 +16,45 @@
                 @Html.DisplayNameFor(model => model.Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Proposal)
+                @Html.DisplayNameFor(model => model.Product)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ProposedBy)
+                @Html.DisplayNameFor(model => model.Deviation)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ProposedOn)
+                @Html.DisplayNameFor(model => model.DeterminedBy)
+            </th>
+               <th>
+                @Html.DisplayNameFor(model => model.DeterminedOn)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Status)
+                Status
             </th>
-         @*   <th>
-                @Html.DisplayNameFor(model=>model.product)
-            </th>*@
-            <th>
-                Action
-            </th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model) 
         {
             <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)
                 </td>
-               
-                 <td>
-                    @Html.DisplayFor(modelItem => item.Proposal)
-                </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.ProposedBy)
+                    @Html.DisplayFor(modelItem => item.Product.Name)
+                </td>         
+                    <td>
+                    @Html.DisplayFor(modelItem => item.Deviation.Title)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ProposedOn)
+                    <td>
+                    @Html.DisplayFor(modelItem => item.DeterminedBy)
+                </td>
+                    <td>
+                    @Html.DisplayFor(modelItem => item.DeterminedOn)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Status)
                 </td>
-              @*  <td>
-                    @Html.DisplayFor(modelItem => item.product.ProductName)
-                </td>*@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> 
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> 

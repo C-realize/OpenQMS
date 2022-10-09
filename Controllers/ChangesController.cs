@@ -21,7 +21,7 @@ namespace OpenQMS.Controllers
 
         public ChangesController
         (
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager
         )
@@ -34,9 +34,9 @@ namespace OpenQMS.Controllers
         // GET: Changes
         public async Task<IActionResult> Index()
         {
-              return _context.Change != null ? 
-                          View(await _context.Change.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Change'  is null.");
+            return _context.Change != null ?
+                View(await _context.Change.Include(x => x.Product).ToListAsync()) :
+                Problem("Entity set 'ApplicationDbContext.Change'  is null.");
         }
 
         // GET: Changes/Details/5
@@ -47,7 +47,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            var change = await _context.Change
+            var change = await _context.Change.Include(a => a.Product).Include(x => x.Capa)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (change == null)
             {
@@ -62,7 +62,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Details(int id, [Bind("Id,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,ImplementedBy,ImplementedOn,Status")] Change change, string InputEmail, string InputPassword)
+        public async Task<IActionResult> Details(int id, [Bind("Id,ProductId,CapaId,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,ImplementedBy,ImplementedOn,Status")] Change change, string InputEmail, string InputPassword)
         {
             if (id != change.Id)
             {
@@ -93,12 +93,13 @@ namespace OpenQMS.Controllers
                         return Forbid();
                     }
 
-                    if(change.Status == Change.ChangeStatus.Assessment)
+                    if (change.Status == Change.ChangeStatus.Assessment)
                     {
                         change.AcceptedBy = _userManager.GetUserName(User);
                         change.AcceptedOn = DateTime.Now;
                         change.Status = Change.ChangeStatus.Accepted;
                     }
+
                     if (change.Status == Change.ChangeStatus.Implementation)
                     {
                         change.ApprovedBy = _userManager.GetUserName(User);
@@ -128,6 +129,9 @@ namespace OpenQMS.Controllers
         // GET: Changes/Create
         public IActionResult Create()
         {
+            ViewData["Products"] = _context.Product.ToList();
+            ViewData["Capa"] = _context.Capa.ToList();
+
             return View();
         }
 
@@ -136,12 +140,13 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Proposal,ProposedBy")] Change change)
+        public async Task<IActionResult> Create([Bind("Title,Proposal,ProposedBy,ProductId,CapaId")] Change change)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
+                    //change.AssessedBy = _userManager.GetUserName(User);
                     change.ProposedBy = _userManager.GetUserName(User);
                     change.ProposedOn = DateTime.Now;
                     change.Status = Change.ChangeStatus.Proposal;
@@ -172,6 +177,9 @@ namespace OpenQMS.Controllers
             {
                 return NotFound();
             }
+
+            ViewData["Products"] = _context.Product.ToList();
+            ViewData["Capa"] = _context.Capa.ToList();
             return View(change);
         }
 
@@ -180,7 +188,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,Status")] Change change)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,Status,ProductId,CapaId")] Change change)
         {
             if (id != change.Id)
             {
@@ -191,7 +199,7 @@ namespace OpenQMS.Controllers
             {
                 try
                 {
-                    if(change.Status == Change.ChangeStatus.Proposal || change.Status == Change.ChangeStatus.Assessment)
+                    if (change.Status == Change.ChangeStatus.Proposal || change.Status == Change.ChangeStatus.Assessment)
                     {
                         change.AssessedBy = _userManager.GetUserName(User);
                         change.AssessedOn = DateTime.Now;
@@ -231,6 +239,8 @@ namespace OpenQMS.Controllers
             }
 
             var change = await _context.Change
+                .Include(a => a.Product)
+                .Include(x => x.Capa)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (change == null)
             {
@@ -249,19 +259,21 @@ namespace OpenQMS.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Change'  is null.");
             }
-            var change = await _context.Change.FindAsync(id);
-            if (change != null)
+            var change = await _context.Change
+                            .Include(a => a.Product)
+                            .Include(x => x.Capa)
+                            .FirstOrDefaultAsync(m => m.Id == id); if (change != null)
             {
                 _context.Change.Remove(change);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ChangeExists(int id)
         {
-          return (_context.Change?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Change?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

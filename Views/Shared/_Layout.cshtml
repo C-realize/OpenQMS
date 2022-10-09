@@ -20,19 +20,19 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">Products</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
+                        </li>
+                         <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Changes" asp-action="Index">Changes</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">Processes</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Changes" asp-action="Index">Changes</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Deviations" asp-action="Index">Deviations</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">Deviations</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">CAPA</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Capas" asp-action="Index">CAPA</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Trainings" asp-action="Index">Trainings</a>
@@ -40,6 +40,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="AppDocuments" asp-action="Index">Policies</a>
                         </li>
+
                         @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
                         {
                             <li class="nav-item">
@@ -72,6 +73,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

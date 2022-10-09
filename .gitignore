@@ -372,3 +372,5 @@ openqms-deployment.yaml
 openqms-service.yaml
 /Properties/ServiceDependencies/OpenQMS20220604200937 - Web Deploy1
 /Properties/serviceDependencies.OpenQMS20220604200937 - Web Deploy1.json
+/Files
+/Tests

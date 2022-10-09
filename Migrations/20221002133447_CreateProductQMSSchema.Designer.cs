@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenQMS.Data;
 
@@ -11,9 +12,10 @@ using OpenQMS.Data;
 namespace OpenQMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221002133447_CreateProductQMSSchema")]
+    partial class CreateProductQMSSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,7 +185,7 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppDocument", (string)null);
+                    b.ToTable("AppDocument");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.AppRole", b =>
@@ -367,7 +369,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Capa", (string)null);
+                    b.ToTable("Capa");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Change", b =>
@@ -438,7 +440,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Change", (string)null);
+                    b.ToTable("Change");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Deviation", b =>
@@ -504,7 +506,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Deviation", (string)null);
+                    b.ToTable("Deviation");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Navigation.UserTraining", b =>
@@ -562,7 +564,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("EditedBy");
 
-                    b.ToTable("Product", (string)null);
+                    b.ToTable("Product");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Training", b =>
@@ -601,7 +603,7 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Training", (string)null);
+                    b.ToTable("Training");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

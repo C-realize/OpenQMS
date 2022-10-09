@@ -1,15 +1,14 @@
-﻿@model OpenQMS.Models.Change
+﻿@model OpenQMS.Models.Capa
 
 @{
     ViewData["Title"] = "Edit";
-    Layout = "~/Views/Shared/_Layout.cshtml";
     var products = (List<Product>)ViewData["Products"];
-    var capa = (List<Capa>)ViewData["Capa"];
+    var deviations = (List<Deviation>)ViewData["Deviations"];
 }
 
 <h1>Edit</h1>
 
-<h4>Change</h4>
+<h4>CAPA</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -17,14 +16,14 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="Status" />
-            <input type="hidden" asp-for="ProposedBy" />
-            <input type="hidden" asp-for="ProposedOn" />
+            <input type="hidden" asp-for="DeterminedBy" />
+            <input type="hidden" asp-for="DeterminedOn" />
             <input type="hidden" asp-for="AssessedBy" />
             <input type="hidden" asp-for="AssessedOn" />
             <input type="hidden" asp-for="AcceptedBy" />
             <input type="hidden" asp-for="AcceptedOn" />
 
-            @if (@Model.Status == Change.ChangeStatus.Proposal || @Model.Status == Change.ChangeStatus.Assessment)
+            @if (@Model.Status == Capa.CapaStatus.Determination || @Model.Status == Capa.CapaStatus.Assessment)
             {
                 <div class="form-group">
                     <label asp-for="Title" class="control-label"></label>
@@ -34,55 +33,69 @@
                 <div class="form-group">
                     <label>Product</label>
                     <select asp-for="ProductId" class="form-control" asp-items='new SelectList(products,"Id","Name")'>
+                        <option value="0">--Select Product--</option>
                     </select>
                     <span asp-validation-for="ProductId" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label>Capa</label>
-                    <select asp-for="CapaId" class="form-control" asp-items='new SelectList(capa,"Id","Title")'>
+                    <label>Deviation</label>
+                    <select asp-for="DeviationId" class="form-control" asp-items='new SelectList(deviations,"Id","Title")'>
+                        <option value="0">--Select Deviation--</option>
                     </select>
-                    <span asp-validation-for="CapaId" class="text-danger"></span>
+                    <span asp-validation-for="DeviationId" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Proposal" class="control-label"></label>
-                    <textarea asp-for="Proposal" class="form-control"></textarea>
-                    <span asp-validation-for="Proposal" class="text-danger"></span>
+                    <label asp-for="CorrectiveAction" class="control-label"></label>
+                    <input asp-for="CorrectiveAction" class="form-control" />
+                    <span asp-validation-for="CorrectiveAction" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PreventiveAction" class="control-label"></label>
+                    <input asp-for="PreventiveAction" class="form-control" />
+                    <span asp-validation-for="PreventiveAction" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="Assessment" class="control-label"></label>
-                    <textarea asp-for="Assessment" class="form-control"></textarea>
+                    <input asp-for="Assessment" class="form-control" />
                     <span asp-validation-for="Assessment" class="text-danger"></span>
                 </div>
             }
             else
             {
-                @if (@Model.Status == Change.ChangeStatus.Accepted || @Model.Status == Change.ChangeStatus.Implementation)
+                @if (@Model.Status == Capa.CapaStatus.Accepted || @Model.Status == Capa.CapaStatus.Implementation)
                 {
                     <div class="form-group">
                         <label asp-for="Title" class="control-label"></label>
-                        <input asp-for="Title" class="form-control" readonly/>
+                        <input asp-for="Title" class="form-control" readonly />
                         <span asp-validation-for="Title" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Proposal" class="control-label"></label>
-                        <input asp-for="Proposal" class="form-control" readonly/>
-                        <span asp-validation-for="Proposal" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label>Product</label>
                         <select asp-for="ProductId" class="form-control" readonly asp-items='new SelectList(products,"Id","Name")'>
+                            <option value="0">--Select Product--</option>
                         </select>
                         <span asp-validation-for="ProductId" class="text-danger"></span>
                     </div>
                     <div class="form-group">
-                        <label>Capa</label>
-                        <select asp-for="CapaId" class="form-control" readonly asp-items='new SelectList(capa,"Id","Title")'>
+                        <label>Deviation</label>
+                        <select asp-for="DeviationId" class="form-control" readonly asp-items='new SelectList(deviations,"Id","Title")'>
+                            <option value="0">--Select Deviation--</option>
                         </select>
-                        <span asp-validation-for="CapaId" class="text-danger"></span>
+                        <span asp-validation-for="DeviationId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PreventiveAction" class="control-label"></label>
+                        <input asp-for="PreventiveAction" class="form-control" readonly />
+                        <span asp-validation-for="PreventiveAction" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="CorrectiveAction" class="control-label"></label>
+                        <input asp-for="CorrectiveAction" class="form-control" readonly />
+                        <span asp-validation-for="CorrectiveAction" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="Assessment" class="control-label"></label>
-                        <textarea asp-for="Assessment" class="form-control" readonly></textarea>
+                        <textarea asp-for="Assessment" class="form-control" readonly ></textarea>
                         <span asp-validation-for="Assessment" class="text-danger"></span>
                     </div>
                     <div class="form-group">
@@ -92,9 +105,14 @@
                     </div>
                 }
             }
+
+            <br>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
+
+            <br>
+            <a href="/Changes/Create" class="btn btn-info">Add New Change</a>
         </form>
     </div>
 </div>

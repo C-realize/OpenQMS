@@ -10,6 +10,7 @@ namespace OpenQMS.Models
 
         [PersonalData]
         public string LastName { get; set; }
-        public ICollection<UserTraining> Trainings { get; set; }
+        public ICollection<UserTraining> Trainings { get; set; } 
+
     }
 }

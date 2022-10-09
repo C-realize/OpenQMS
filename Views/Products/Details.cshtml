@@ -1,0 +1,172 @@
+﻿@model OpenQMS.Models.Product
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<h4>Product</h4>
+<hr />
+<div>
+    <dl class="row">
+        <div asp-validation-summary="ModelOnly" class="text-danger col-sm-12"></div>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Version)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Version)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.EditedBy)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EditedByUser.UserName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.EditedOn)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EditedOn)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ApprovedBy)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ApprovedByUser.UserName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ApprovedOn)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ApprovedOn)
+        </dd>
+        <dt class="col-sm-2">
+            Status
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+    </dl>
+
+    <h2>Changes List</h2>
+    <div class="row">
+        <table class="table table-border">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Proposal</th>
+                    <th>Assessment</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Changes)
+                {
+                    <tr>
+                        <td><a href="/Changes/Details/@item.Id">@item.Title</a></td>
+                        <td>@item.Proposal</td>
+                        <td>@item.Assessment</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br />
+
+    <h2>Deviations List</h2>
+    <div class=" row">
+        <table class=" table table-border">
+
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Evaluation</th>
+                    <th>Resolution</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Deviation)
+                {
+                    <tr>
+                        <td><a href="/Deviations/Details/@item.Id">@item.Title</a></td>
+                        <td>@item.Evaluation</td>
+                        <td>@item.Resolution</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br />
+
+    <h2>CAPA List</h2>
+    <div class="row">
+        <table class="table table-border">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>CorrectiveAction</th>
+                    <th>PreventiveAction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Capa)
+                {
+                    <tr>
+                        <td>
+                            <a href="/Capas/Details/@item.Id">@item.Title</a>
+                        </td>
+                        <td>@item.CorrectiveAction</td>
+                        <td>@item.PreventiveAction</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br />
+
+    @if ((User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole)) && Model.Status == OpenQMS.Models.Product.ProductStatus.Draft)
+    {
+        <form style="display:inline;" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Name" />
+            <input type="hidden" asp-for="Description" />
+            <input type="hidden" asp-for="Version" />
+            <input type="hidden" asp-for="EditedBy" />
+            <input type="hidden" asp-for="EditedOn" />
+            <input type="hidden" asp-for="Status" />        
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="InputEmail" id="InputEmail" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="InputPassword" id="InputPassword" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <button type="submit" class="btn btn-success">Approved</button>
+        </form>
+    }
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <br />
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -1,16 +1,15 @@
-﻿@model OpenQMS.Models.Change
+﻿@model OpenQMS.Models.Deviation
 
 @{
     ViewData["Title"] = "Delete";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h1>Delete</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h4>Deviation</h4>
+<hr />
+<h5 style="color:red;">Are you sure you want to delete this?</h5>
 <div>
-    <h4>Change</h4>
-    <hr />
     <dl class="row">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
@@ -25,46 +24,40 @@
             <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Capa)
+            @Html.DisplayNameFor(model => model.Identification)
         </dt>
         <dd class="col-sm-10">
-            <a href="/Capas/Details/@Model.CapaId">@Model.Capa.Title</a>
+            @Html.DisplayFor(model => model.Identification)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Proposal)
+            @Html.DisplayNameFor(model => model.IdentifiedBy)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Proposal)
+            @Html.DisplayFor(model => model.IdentifiedBy)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ProposedBy)
+            @Html.DisplayNameFor(model => model.IdentifiedOn)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ProposedBy)
+            @Html.DisplayFor(model => model.IdentifiedOn)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ProposedOn)
+            @Html.DisplayNameFor(model => model.Evaluation)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ProposedOn)
+            @Html.DisplayFor(model => model.Evaluation)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Assessment)
+            @Html.DisplayNameFor(model => model.EvaluatedBy)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Assessment)
+            @Html.DisplayFor(model => model.EvaluatedBy)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AssessedBy)
+            @Html.DisplayNameFor(model => model.EvaluatedOn)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AssessedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AssessedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AssessedOn)
+            @Html.DisplayFor(model => model.EvaluatedOn)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.AcceptedBy)
@@ -79,22 +72,22 @@
             @Html.DisplayFor(model => model.AcceptedOn)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Implementation)
+            @Html.DisplayNameFor(model => model.Resolution)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Implementation)
+            @Html.DisplayFor(model => model.Resolution)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedBy)
+            @Html.DisplayNameFor(model => model.ResolvedBy)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedBy)
+            @Html.DisplayFor(model => model.ResolvedBy)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedOn)
+            @Html.DisplayNameFor(model => model.ResolvedOn)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedOn)
+            @Html.DisplayFor(model => model.ResolvedOn)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ApprovedBy)
@@ -116,6 +109,31 @@
         </dd>
     </dl>
 
+    <br />
+    <h2>CAPA</h2>
+    <div class="row">
+        <table class="table table-border">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>CorrectiveAction</th>
+                    <th>PreventiveAction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Capas)
+                {
+                    <tr>
+                        <td><a href="/Capas/Details/@item.Id">@item.Title</a></td>
+                        <td>@item.CorrectiveAction</td>
+                        <td>@item.PreventiveAction</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <br />
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |

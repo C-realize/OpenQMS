@@ -5,50 +5,159 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "/AppDocuments/GetDocuments",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    var ctx = document.getElementById("PieChart");
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            datasets: data.dataSet,
+                            labels: data.labels
+                        },
+                        options: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    fontSize: 14,
+                                    fontColor: '#000'
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function (e, f, g) {
+                    console.log(e, f, g);
+                }
+            });
 
-<h4>Documents</h4>
-<hr />
+            $.ajax({
+                url: "/AppDocuments/GetDocumentsForBarchart",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    var ctx = document.getElementById("BarChart");
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: data.dataSet
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        fontColor: "black",
+                                        fontSize: 9,
+                                        beginAtZero: true,
+                                        padding: 20
+                                    },
+                                    gridLines: {
+                                        display: true,
+                                        color: "#EBEBEB",
+                                        drawBorder: false
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'No. Of Edited Documents',
+                                        fontColor: "black",
+                                        fontSize: 11
+                                    }
+                                }],
+                                xAxes: [{
+                                    ticks: {
+                                        fontColor: "black",
+                                        fontSize: 9,
+                                        beginAtZero: true,
+                                        padding: 10
+                                    },
+                                    gridLines: {
+                                        display: false,
+                                        color: "#EBEBEB",
+                                        drawBorder: false
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Edited On',
+                                        fontColor: "black",
+                                        fontSize: 14
+                                    }
+                                }]
+                            },
+                            legend: {
+                                display: false,
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    fontSize: 10,
+                                    fontColor: '#000'
+                                },
+                                showLines: true
+                            }
+                        }
+                    });
+                },
+                error: function (e, f, g) {
+                    console.log(e, f, g);
+                }
+            });
+        });
+    </script>
+}
 
-<form asp-action="Index" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-            <input type="submit" value="Search" class="btn btn-default" /> |
-            <a asp-action="Index">Back to Full List</a>
-        </p>
-    </div>
-</form>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Title</a>
-            </th>
-            <th>
-                Version
-            </th>
-            <th>
-                Status
-            </th>
-            <th>
-                Authored By
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Authored On</a>
-            </th>
-            <th>
-                Approved By
-            </th>
-            <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["ApproveDateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Approved On</a>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model) 
+
+    <h1>Index</h1>
+
+    <h4>Documents</h4>
+    <hr />
+
+    <form asp-action="Index" method="get">
+        <div class="form-actions no-color">
+            <p>
+                Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
+                <input type="submit" value="Search" class="btn btn-default" /> |
+                <a asp-action="Index">Back to Full List</a>
+            </p>
+        </div>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Title</a>
+                </th>
+                <th>
+                    Version
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Authored By
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Authored On</a>
+                </th>
+                <th>
+                    Approved By
+                </th>
+                <th>
+                    <a asp-action="Index" asp-route-sortOrder="@ViewData["ApproveDateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Approved On</a>
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
         {
             <tr>
                 <td>
@@ -75,14 +184,14 @@
                 <td>
                     @if ((await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Update)).Succeeded)
                     {
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> 
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                         <text> | </text>
                     }
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    @if (item.Status!=AppDocument.DocumentStatus.Approved && (await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Delete)).Succeeded)
+                    @if (item.Status != AppDocument.DocumentStatus.Approved && (await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Delete)).Succeeded)
                     {
                         <text> | </text>
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>    
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                     }
                 </td>
             </tr>
@@ -116,3 +225,23 @@
    class="btn btn-default @nextDisabled">
     Next
 </a>
+
+<div class="row">
+    <div style="float: left; width: calc(100% - 600px);margin-left: 90px">
+        <p>Documents Status Chart</p>
+        <div style="width:265px; border:1px solid #7F7F7F; padding-top: 10px">
+            <div>
+                <canvas height="300" id="PieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div style="float: right; width: 300px;">
+        <p>Documents Status Chart</p>
+        <div style="margin-left:-17px; border:1px solid #7F7F7F; padding: 8px 12px 0px 8px;">
+            <div>
+                <canvas height="300" id="BarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>

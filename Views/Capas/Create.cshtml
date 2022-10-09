@@ -1,0 +1,60 @@
+﻿@model OpenQMS.Models.Capa
+
+@{
+    ViewData["Title"] = "Create";
+    var products =(List<Product>)ViewData["Products"];
+    var deviations =(List<Deviation>)ViewData["Deviations"];
+}
+
+<h1>Create</h1>
+
+<h4>CAPA</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="DeterminedBy" value="X" />
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Product</label>
+                <select asp-for ="ProductId" class="form-control" asp-items='new SelectList(products,"Id","Name")'>
+                    <option value="0">--SelectProduct--</option>
+                </select>
+                <span asp-validation-for="ProductId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Deviation</label>
+                <select asp-for ="DeviationId" class="form-control" asp-items='new SelectList(deviations,"Id","Title")'>
+                    <option value="0">--SelectProduct--</option>
+                </select>
+                <span asp-validation-for="DeviationId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CorrectiveAction" class="control-label"></label>
+                <input asp-for="CorrectiveAction" class="form-control" />
+                <span asp-validation-for="CorrectiveAction" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PreventiveAction" class="control-label"></label>
+                <input asp-for="PreventiveAction" class="form-control" />
+                <span asp-validation-for="PreventiveAction" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

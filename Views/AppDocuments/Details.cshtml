@@ -59,6 +59,12 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.ApprovedOn)
         </dd>
+        <dt class = "col-sm-2">
+            File Path
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FilePath)
+        </dd>
     </dl>
     <a type="button" class="btn btn-primary" asp-action="DownloadFile" asp-route-id="@Model.Id">Download</a>
 </div>

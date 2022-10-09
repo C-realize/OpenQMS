@@ -9,6 +9,7 @@ namespace OpenQMS.Models
         public string Description { get; set; }
         public double Version { get; set; }
         public byte[]? Content { get; set; }
+        public string? FilePath { get; set; }
         public string FileType { get; set; }
         public string FileExtension { get; set; }
         public DocumentStatus Status { get; set; }
