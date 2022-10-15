@@ -5,77 +5,101 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
-
-<h4>Products</h4>
-<hr />
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Version)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EditedBy)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EditedOn)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ApprovedBy)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ApprovedOn)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Version)
-                </td>
-                <td>
-                    @(item.EditedByUser == null ? "" : item.EditedByUser.UserName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.EditedOn)
-                </td>
-                <td>
-                    @(item.ApprovedByUser == null ? "" : item.ApprovedByUser.UserName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ApprovedOn)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Status)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-
-<p>
-    <a class="btn btn-success" asp-action="ExportProducts">Export</a>
-</p>
+<div class="app-page-title">
+    <div class="page-title-wrapper">
+        <div class="page-title-heading">
+            <div>
+                Products
+            </div>
+        </div>
+        <div class="page-title-actions">
+            <div class="d-inline-block dropdown">
+                <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn-shadow dropdown-toggle btn btn-info">
+                    <span class="btn-icon-wrapper pr-2 opacity-7">
+                        <i class="fa fa-business-time fa-w-20"></i>
+                    </span>
+                    Actions
+                </button>
+                <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="Create">
+                                <i class="nav-link-icon lnr-inbox"></i>
+                                <span>
+                                    Create New
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="ExportProducts">
+                                <i class="nav-link-icon lnr-book"></i>
+                                <span>
+                                    Export
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="main-card mb-3 card">
+    <div class="card-body">
+        <table style="width: 100%;" id="example" class="table table-hover table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Version)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.EditedBy)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ApprovedBy)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.ApprovedOn)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Status)
+                    </th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Version)
+                        </td>
+                        <td>
+                            @(item.EditedByUser == null ? "" : item.EditedByUser.UserName)
+                        </td>
+                        <td>
+                            @(item.ApprovedByUser == null ? "" : item.ApprovedByUser.UserName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApprovedOn)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Status)
+                        </td>
+                        <td>
+                            <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary actionButton" asp-action="Edit" asp-route-id="@item.Id"><i class="pe-7s-tools btn-icon-wrapper"> </i></a>
+                            <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-warning actionButton" asp-action="Delete" asp-route-id="@item.Id"><i class="pe-7s-trash btn-icon-wrapper"> </i></a>
+                            <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary actionButton" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

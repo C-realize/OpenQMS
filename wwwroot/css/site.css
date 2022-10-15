@@ -13,6 +13,10 @@ html {
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
+.Details p {
+  margin-right: 10px;
+}
+
+.actionButton {
+  margin-right: 0px !important;
 }

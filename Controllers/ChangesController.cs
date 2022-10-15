@@ -35,7 +35,7 @@ namespace OpenQMS.Controllers
         public async Task<IActionResult> Index()
         {
             return _context.Change != null ?
-                View(await _context.Change.Include(x => x.Product).ToListAsync()) :
+                View(await _context.Change.Include(x => x.Product).Include(x => x.Asset).ToListAsync()) :
                 Problem("Entity set 'ApplicationDbContext.Change'  is null.");
         }
 
@@ -47,7 +47,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            var change = await _context.Change.Include(a => a.Product).Include(x => x.Capa)
+            var change = await _context.Change.Include(a => a.Product).Include(a => a.Asset).Include(x => x.Capa)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (change == null)
             {
@@ -62,7 +62,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Details(int id, [Bind("Id,ProductId,CapaId,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,ImplementedBy,ImplementedOn,Status")] Change change, string InputEmail, string InputPassword)
+        public async Task<IActionResult> Details(int id, [Bind("Id,ProductId,AssetId,CapaId,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,ImplementedBy,ImplementedOn,Status")] Change change, string InputEmail, string InputPassword)
         {
             if (id != change.Id)
             {
@@ -130,6 +130,7 @@ namespace OpenQMS.Controllers
         public IActionResult Create()
         {
             ViewData["Products"] = _context.Product.ToList();
+            ViewData["Assets"] = _context.Asset.ToList();
             ViewData["Capa"] = _context.Capa.ToList();
 
             return View();
@@ -140,7 +141,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Proposal,ProposedBy,ProductId,CapaId")] Change change)
+        public async Task<IActionResult> Create([Bind("Title,Proposal,ProposedBy,ProductId,AssetId,CapaId")] Change change)
         {
             try
             {
@@ -179,6 +180,7 @@ namespace OpenQMS.Controllers
             }
 
             ViewData["Products"] = _context.Product.ToList();
+            ViewData["Assets"] = _context.Asset.ToList();
             ViewData["Capa"] = _context.Capa.ToList();
             return View(change);
         }
@@ -188,7 +190,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,Status,ProductId,CapaId")] Change change)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,Status,ProductId,AssetId,CapaId")] Change change)
         {
             if (id != change.Id)
             {
@@ -240,6 +242,7 @@ namespace OpenQMS.Controllers
 
             var change = await _context.Change
                 .Include(a => a.Product)
+                .Include(a => a.Asset)
                 .Include(x => x.Capa)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (change == null)
@@ -261,6 +264,7 @@ namespace OpenQMS.Controllers
             }
             var change = await _context.Change
                             .Include(a => a.Product)
+                            .Include(a => a.Asset)
                             .Include(x => x.Capa)
                             .FirstOrDefaultAsync(m => m.Id == id); if (change != null)
             {

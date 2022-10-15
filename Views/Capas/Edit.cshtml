@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Edit";
     var products = (List<Product>)ViewData["Products"];
+    var assets = (List<Asset>)ViewData["Assets"];
     var deviations = (List<Deviation>)ViewData["Deviations"];
 }
 
@@ -36,6 +37,13 @@
                         <option value="0">--Select Product--</option>
                     </select>
                     <span asp-validation-for="ProductId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Asset</label>
+                    <select asp-for="AssetId" class="form-control" asp-items='new SelectList(assets,"Id","Name")'>
+                        <option value="">--Select Asset--</option>
+                    </select>
+                    <span asp-validation-for="AssetId" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label>Deviation</label>
@@ -75,6 +83,13 @@
                             <option value="0">--Select Product--</option>
                         </select>
                         <span asp-validation-for="ProductId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Asset</label>
+                        <select asp-for="AssetId" class="form-control" readonly asp-items='new SelectList(assets,"Id","Name")'>
+                            <option value="">--Select Asset--</option>
+                        </select>
+                        <span asp-validation-for="AssetId" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label>Deviation</label>

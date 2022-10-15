@@ -9,6 +9,9 @@ namespace OpenQMS.Models
         public int? ProductId { get; set; }
         [ForeignKey("ProductId")]
         public virtual Product? Product { get; set; }
+        public int? AssetId { get; set; }
+        [ForeignKey("AssetId")]
+        public virtual Asset? Asset { get; set; }
         public int? CapaId { get; set; }
         [ForeignKey("CapaId")]
         public virtual Capa? Capa { get; set; }

@@ -5,159 +5,229 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Details</h1>
-
-<h4>Change</h4>
-<hr />
-<div>
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Product.Name)
-        </dt>
-        <dd class="col-sm-10">
-            <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Capa)
-        </dt>
-        <dd class="col-sm-10">
-            <a href="/Capas/Details/@Model.CapaId">@Model.Capa.Title</a>
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Proposal)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Proposal)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ProposedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ProposedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ProposedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ProposedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Assessment)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Assessment)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AssessedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AssessedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AssessedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AssessedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AcceptedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AcceptedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AcceptedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AcceptedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Implementation)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Implementation)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-    </dl>
-</div>
-
-<br />
-<div class="row">
-    <div class="col-md-4">
-        @if (Model.Status == Change.ChangeStatus.Assessment || Model.Status == Change.ChangeStatus.Implementation)
-        {
-            @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
-            {
-                <form style="display:inline;" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="Title" />
-                    <input type="hidden" asp-for="ProductId" />
-                    <input type="hidden" asp-for="CapaId" />
-                    <input type="hidden" asp-for="Proposal" />
-                    <input type="hidden" asp-for="ProposedBy" />
-                    <input type="hidden" asp-for="ProposedOn" />
-                    <input type="hidden" asp-for="Assessment" />
-                    <input type="hidden" asp-for="AssessedBy" />
-                    <input type="hidden" asp-for="AssessedOn" />
-                    <input type="hidden" asp-for="AcceptedBy" />
-                    <input type="hidden" asp-for="AcceptedOn" />
-                    <input type="hidden" asp-for="Implementation" />
-                    <input type="hidden" asp-for="ImplementedBy" />
-                    <input type="hidden" asp-for="ImplementedOn" />
-                    <input type="hidden" asp-for="Status" />
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" name="InputEmail" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" name="InputPassword" class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-xs btn-success">Approve</button>
-                </form>
-            }
-        }
+<div class="app-page-title">
+    <div class="page-title-wrapper">
+        <div class="page-title-heading">
+            <h2>
+                @Model.Title
+            </h2>
+        </div>
+    </div>
+    <div class="page-title-subheading opacity-10">
+        <nav class="" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a>
+                        <i aria-hidden="true" class="fa fa-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a asp-action="Index">Changes List</a>
+                </li>
+                <li class="active breadcrumb-item" aria-current="page">
+                    <a asp-action="Details" asp-route-id="@Model.Id">Change Details</a>
+                </li>
+            </ol>
+        </nav>
     </div>
 </div>
-
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="row">
+    <div class="col-md-12">
+        <div class="main-card mb-3 card">
+            <div class="card-body">
+                <ul class="nav nav-tabs z_nav">
+                    <li class="nav-item">
+                        <a role="tab" class="nav-link Detail_tabs active show" id="tab-0" data-toggle="tab" href="#tab-content-0">
+                            <span>Change Info</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane tabs-animation fade  active show" id="tab-content-0" role="tabpanel">
+                    <div class="card-body" style="padding-top: 0px;">
+                        <div class="row">
+                            <div class="col-12 Details">
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Title):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.Title)
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Status):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.Status)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Product.Name):</p>
+                                        <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">Asset:</p>
+                                        <p>
+                                            @if (Model.Asset != null)
+                                            {
+                                                <a href="/Asset/Details/@Model.AssetId">@Model.Asset.Name</a>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">Capa:</p>
+                                        @if (Model.Capa != null)
+                                        {
+                                            <a href="/Capas/Details/@Model.CapaId">@Model.Capa.Title</a>
+                                        }
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Proposal):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.Proposal)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ProposedBy):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.ProposedBy)
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ProposedOn):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.ProposedOn)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Assessment):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.Assessment)
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.AssessedBy):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.AssessedBy)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.AssessedOn):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.AssessedOn)
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.AcceptedBy):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.AcceptedBy)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.AcceptedOn):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.AcceptedOn)
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Implementation):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.Implementation)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ImplementedBy):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.ImplementedBy)
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ImplementedOn):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.ImplementedOn)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ApprovedBy):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.ApprovedBy)
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ApprovedOn):</p>
+                                        <p>
+                                            @Html.DisplayFor(model => model.ApprovedOn)
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                    </div>
+                                    <div class="col d-flex">
+                                        <a class="nav-link mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        @if (Model.Status == Change.ChangeStatus.Assessment || Model.Status == Change.ChangeStatus.Implementation)
+                                        {
+                                            @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
+                                            {
+                                                <form style="display:inline;" method="post">
+                                                    <input type="hidden" asp-for="Id" />
+                                                    <input type="hidden" asp-for="Title" />
+                                                    <input type="hidden" asp-for="ProductId" />
+                                                    <input type="hidden" asp-for="AssetId" />
+                                                    <input type="hidden" asp-for="CapaId" />
+                                                    <input type="hidden" asp-for="Proposal" />
+                                                    <input type="hidden" asp-for="ProposedBy" />
+                                                    <input type="hidden" asp-for="ProposedOn" />
+                                                    <input type="hidden" asp-for="Assessment" />
+                                                    <input type="hidden" asp-for="AssessedBy" />
+                                                    <input type="hidden" asp-for="AssessedOn" />
+                                                    <input type="hidden" asp-for="AcceptedBy" />
+                                                    <input type="hidden" asp-for="AcceptedOn" />
+                                                    <input type="hidden" asp-for="Implementation" />
+                                                    <input type="hidden" asp-for="ImplementedBy" />
+                                                    <input type="hidden" asp-for="ImplementedOn" />
+                                                    <input type="hidden" asp-for="Status" />
+                                                    <div class="form-group">
+                                                        <label>Email</label>
+                                                        <input type="email" name="InputEmail" class="form-control" />
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Password</label>
+                                                        <input type="password" name="InputPassword" class="form-control" />
+                                                    </div>
+                                                    <button type="submit" class="btn btn-success">Approve</button>
+                                                </form>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @*<!-- Button trigger modal -->

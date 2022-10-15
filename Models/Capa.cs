@@ -8,6 +8,9 @@ namespace OpenQMS.Models
         public int? ProductId { get; set; }
         [ForeignKey("ProductId")]
         public virtual Product? Product { get; set; }
+        public int? AssetId { get; set; }
+        [ForeignKey("AssetId")]
+        public virtual Asset? Asset { get; set; }
         public int? DeviationId { get; set; }
         [ForeignKey("DeviationId")]
         public virtual Deviation? Deviation { get; set; }

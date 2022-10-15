@@ -35,7 +35,7 @@ namespace OpenQMS.Controllers
         // GET: Capas
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Capa.Include(x => x.Deviation).Include(c => c.Product);
+            var applicationDbContext = _context.Capa.Include(x => x.Deviation).Include(c => c.Product).Include(c => c.Asset);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -50,6 +50,7 @@ namespace OpenQMS.Controllers
             var capa = await _context.Capa
                 .Include(d => d.Deviation)
                 .Include(c => c.Product)
+                .Include(c => c.Asset)
                 .Include(c => c.Changes)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (capa == null)
@@ -69,6 +70,7 @@ namespace OpenQMS.Controllers
         public IActionResult Create()
         {
             ViewData["Products"] = _context.Product.ToList();
+            ViewData["Assets"] = _context.Asset.ToList();
             ViewData["Deviations"] = _context.Deviation.ToList();
             return View();
         }
@@ -78,7 +80,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,ProductId,DeviationId,CorrectiveAction,PreventiveAction,DeterminedBy,DeterminedOn,ChangeId,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,ImplementedBy,ImplementedOn,ApprovedBy,ApprovedOn,Status")] Capa capa)
+        public async Task<IActionResult> Create([Bind("Id,Title,ProductId,AssetId,DeviationId,CorrectiveAction,PreventiveAction,DeterminedBy,DeterminedOn,ChangeId,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,ImplementedBy,ImplementedOn,ApprovedBy,ApprovedOn,Status")] Capa capa)
         {
             try
             {
@@ -116,6 +118,7 @@ namespace OpenQMS.Controllers
             }
 
             ViewData["Products"] = _context.Product.ToList();
+            ViewData["Assets"] = _context.Asset.ToList();
             ViewData["Deviations"] = _context.Deviation.ToList();
             return View(capa);
         }
@@ -125,7 +128,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ProductId,DeviationId,CorrectiveAction,PreventiveAction,DeterminedBy,DeterminedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,Status")] Capa capa)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ProductId,AssetId,DeviationId,CorrectiveAction,PreventiveAction,DeterminedBy,DeterminedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,Status")] Capa capa)
         {
             if (id != capa.Id)
             {
@@ -179,6 +182,7 @@ namespace OpenQMS.Controllers
             var capa = await _context.Capa
                 .Include(c => c.Deviation)
                 .Include(c => c.Product)
+                .Include(c => c.Asset)
                 .Include(c => c.Changes)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (capa == null)
@@ -202,6 +206,7 @@ namespace OpenQMS.Controllers
             var capa = await _context.Capa
                            .Include(c => c.Deviation)
                            .Include(c => c.Product)
+                           .Include(c => c.Asset)
                            .Include(c => c.Changes)
                            .FirstOrDefaultAsync(m => m.Id == id); if (capa != null)
             {

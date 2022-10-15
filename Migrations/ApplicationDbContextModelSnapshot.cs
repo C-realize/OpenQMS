@@ -183,7 +183,7 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppDocument", (string)null);
+                    b.ToTable("AppDocument");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.AppRole", b =>
@@ -295,6 +295,49 @@ namespace OpenQMS.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("OpenQMS.Models.Asset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("ApprovedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EditedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EditedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Version")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("EditedBy");
+
+                    b.ToTable("Asset");
+                });
+
             modelBuilder.Entity("OpenQMS.Models.Capa", b =>
                 {
                     b.Property<int>("Id")
@@ -323,6 +366,9 @@ namespace OpenQMS.Migrations
 
                     b.Property<string>("Assessment")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AssetId")
+                        .HasColumnType("int");
 
                     b.Property<string>("CorrectiveAction")
                         .IsRequired()
@@ -363,11 +409,13 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssetId");
+
                     b.HasIndex("DeviationId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Capa", (string)null);
+                    b.ToTable("Capa");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Change", b =>
@@ -398,6 +446,9 @@ namespace OpenQMS.Migrations
 
                     b.Property<string>("Assessment")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AssetId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("CapaId")
                         .HasColumnType("int");
@@ -434,11 +485,13 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssetId");
+
                     b.HasIndex("CapaId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Change", (string)null);
+                    b.ToTable("Change");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Deviation", b =>
@@ -460,6 +513,9 @@ namespace OpenQMS.Migrations
 
                     b.Property<DateTime?>("ApprovedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("AssetId")
+                        .HasColumnType("int");
 
                     b.Property<string>("EvaluatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -502,9 +558,11 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssetId");
+
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Deviation", (string)null);
+                    b.ToTable("Deviation");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Navigation.UserTraining", b =>
@@ -562,7 +620,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("EditedBy");
 
-                    b.ToTable("Product", (string)null);
+                    b.ToTable("Product");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Training", b =>
@@ -601,7 +659,7 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Training", (string)null);
+                    b.ToTable("Training");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -655,8 +713,27 @@ namespace OpenQMS.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("OpenQMS.Models.Asset", b =>
+                {
+                    b.HasOne("OpenQMS.Models.AppUser", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedBy");
+
+                    b.HasOne("OpenQMS.Models.AppUser", "EditedByUser")
+                        .WithMany()
+                        .HasForeignKey("EditedBy");
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("EditedByUser");
+                });
+
             modelBuilder.Entity("OpenQMS.Models.Capa", b =>
                 {
+                    b.HasOne("OpenQMS.Models.Asset", "Asset")
+                        .WithMany("Capa")
+                        .HasForeignKey("AssetId");
+
                     b.HasOne("OpenQMS.Models.Deviation", "Deviation")
                         .WithMany("Capas")
                         .HasForeignKey("DeviationId");
@@ -665,6 +742,8 @@ namespace OpenQMS.Migrations
                         .WithMany("Capa")
                         .HasForeignKey("ProductId");
 
+                    b.Navigation("Asset");
+
                     b.Navigation("Deviation");
 
                     b.Navigation("Product");
@@ -672,6 +751,10 @@ namespace OpenQMS.Migrations
 
             modelBuilder.Entity("OpenQMS.Models.Change", b =>
                 {
+                    b.HasOne("OpenQMS.Models.Asset", "Asset")
+                        .WithMany("Changes")
+                        .HasForeignKey("AssetId");
+
                     b.HasOne("OpenQMS.Models.Capa", "Capa")
                         .WithMany("Changes")
                         .HasForeignKey("CapaId");
@@ -680,6 +763,8 @@ namespace OpenQMS.Migrations
                         .WithMany("Changes")
                         .HasForeignKey("ProductId");
 
+                    b.Navigation("Asset");
+
                     b.Navigation("Capa");
 
                     b.Navigation("Product");
@@ -687,9 +772,15 @@ namespace OpenQMS.Migrations
 
             modelBuilder.Entity("OpenQMS.Models.Deviation", b =>
                 {
+                    b.HasOne("OpenQMS.Models.Asset", "Asset")
+                        .WithMany("Deviation")
+                        .HasForeignKey("AssetId");
+
                     b.HasOne("OpenQMS.Models.Product", "Product")
                         .WithMany("Deviation")
                         .HasForeignKey("ProductId");
+
+                    b.Navigation("Asset");
 
                     b.Navigation("Product");
                 });
@@ -731,6 +822,15 @@ namespace OpenQMS.Migrations
             modelBuilder.Entity("OpenQMS.Models.AppUser", b =>
                 {
                     b.Navigation("Trainings");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Asset", b =>
+                {
+                    b.Navigation("Capa");
+
+                    b.Navigation("Changes");
+
+                    b.Navigation("Deviation");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Capa", b =>

@@ -5,39 +5,3 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
 </div>
-<div>
-    <ul>
-        
-          <li>
-            <a asp-area="" asp-controller="Deviations" asp-action="Index">Deviations</a>
-        </li>
-          <li>
-            <a asp-area="" asp-controller="Capas" asp-action="Index">CAPA</a>
-        </li>
-       
-        <li>
-            <a asp-area="" asp-controller="Changes" asp-action="Index">Changes</a>
-        </li>
-        <li>
-            <a asp-area="" asp-controller="Trainings" asp-action="Index">Trainings</a>
-        </li>
-        <li>
-            <a asp-area="" asp-controller="AppDocuments" asp-action="Index">Policies</a>
-        </li>
-        <li>
-            <a asp-area="" asp-controller="Products" asp-action="Index">Products</a>
-        </li>
-        @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
-        {
-            <li>
-                <a asp-area="" asp-controller="AppUsers" asp-action="Index">People</a>
-            </li>
-        }
-        @if (User.IsInRole(Constants.AdministratorsRole))
-        {
-            <li>
-                <a asp-area="" asp-controller="AppRoles" asp-action="Index">Roles</a>
-            </li>
-        }
-    </ul>
-</div>

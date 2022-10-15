@@ -112,120 +112,108 @@
     </script>
 }
 
-
-
-    <h1>Index</h1>
-
-    <h4>Documents</h4>
-    <hr />
-
-    <form asp-action="Index" method="get">
-        <div class="form-actions no-color">
-            <p>
-                Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-                <input type="submit" value="Search" class="btn btn-default" /> |
-                <a asp-action="Index">Back to Full List</a>
-            </p>
+    <div class="app-page-title">
+        <div class="page-title-wrapper">
+            <div class="page-title-heading">
+                <div>
+                    Documents
+                </div>
+            </div>
+            <div class="page-title-actions">
+                <div class="d-inline-block dropdown">
+                    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn-shadow dropdown-toggle btn btn-info">
+                        <span class="btn-icon-wrapper pr-2 opacity-7">
+                            <i class="fa fa-business-time fa-w-20"></i>
+                        </span>
+                        Actions
+                    </button>
+                    <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-action="Create">
+                                    <i class="nav-link-icon lnr-inbox"></i>
+                                    <span>
+                                        Create New
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-    </form>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Title</a>
-                </th>
-                <th>
-                    Version
-                </th>
-                <th>
-                    Status
-                </th>
-                <th>
-                    Authored By
-                </th>
-                <th>
-                    <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Authored On</a>
-                </th>
-                <th>
-                    Approved By
-                </th>
-                <th>
-                    <a asp-action="Index" asp-route-sortOrder="@ViewData["ApproveDateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Approved On</a>
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Version)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Status)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AuthoredBy)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AuthoredOn)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ApprovedBy)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ApprovedOn)
-                </td>
-                <td>
-                    @if ((await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Update)).Succeeded)
-                    {
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                        <text> | </text>
-                    }
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    @if (item.Status != AppDocument.DocumentStatus.Approved && (await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Delete)).Succeeded)
-                    {
-                        <text> | </text>
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-
-@{
-    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-}
-
-<a asp-action="Index"
-   asp-route-sortOrder="@ViewData["CurrentSort"]"
-   asp-route-pageNumber="@(Model.PageIndex - 1)"
-   asp-route-currentFilter="@ViewData["CurrentFilter"]"
-   class="btn btn-default @prevDisabled">
-    Previous
-</a>
-
-<a><---Page @Model.PageIndex of @Model.TotalPages---></></a>
-
-<a asp-action="Index"
-   asp-route-sortOrder="@ViewData["CurrentSort"]"
-   asp-route-pageNumber="@(Model.PageIndex + 1)"
-   asp-route-currentFilter="@ViewData["CurrentFilter"]"
-   class="btn btn-default @nextDisabled">
-    Next
-</a>
-
+    </div>
+    <div class="main-card mb-3 card">
+        <div class="card-body">
+            <table style="width: 100%;" id="example" class="table table-hover table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            Title
+                        </th>
+                        <th>
+                            Version
+                        </th>
+                        <th>
+                            Status
+                        </th>
+                        <th>
+                            Authored By
+                        </th>
+                        <th>
+                            Authored On
+                        </th>
+                        <th>
+                            Approved By
+                        </th>
+                        <th>
+                            Approved On
+                        </th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Title)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Version)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Status)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AuthoredBy)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AuthoredOn)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApprovedBy)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApprovedOn)
+                        </td>
+                        <td>
+                            @if ((await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Update)).Succeeded)
+                            {
+                                <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary actionButton" asp-action="Edit" asp-route-id="@item.Id"><i class="pe-7s-tools btn-icon-wrapper"> </i></a>
+                            }
+                            @if (item.Status != AppDocument.DocumentStatus.Approved && (await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Delete)).Succeeded)
+                            {
+                                <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-warning actionButton" asp-action="Delete" asp-route-id="@item.Id"><i class="pe-7s-trash btn-icon-wrapper"> </i></a>
+                            }
+                            <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary actionButton" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 <div class="row">
     <div style="float: left; width: calc(100% - 600px);margin-left: 90px">
         <p>Documents Status Chart</p>
@@ -235,7 +223,6 @@
             </div>
         </div>
     </div>
-
     <div style="float: right; width: 300px;">
         <p>Documents Status Chart</p>
         <div style="margin-left:-17px; border:1px solid #7F7F7F; padding: 8px 12px 0px 8px;">

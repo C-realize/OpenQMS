@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Edit";
     var products = (List<Product>)ViewData["Products"];
+    var assets = (List<Asset>)ViewData["Assets"];
 }
 
 <h1>Edit</h1>
@@ -37,6 +38,13 @@
                     <span asp-validation-for="ProductId" class="text-danger"></span>
                 </div>
                 <div class="form-group">
+                    <label>Asset</label>
+                    <select asp-for="AssetId" class="form-control" asp-items='new SelectList(assets,"Id","Name")'>
+                        <option value="">--Select Asset--</option>
+                    </select>
+                    <span asp-validation-for="AssetId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
                     <label asp-for="Identification" class="control-label"></label>
                     <input asp-for="Identification" class="form-control" />
                     <span asp-validation-for="Identification" class="text-danger"></span>
@@ -62,6 +70,13 @@
                             <option value="0">--SelectProduct--</option>
                         </select>
                         <span asp-validation-for="ProductId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Asset</label>
+                        <select asp-for="AssetId" class="form-control" readonly asp-items='new SelectList(assets,"Id","Name")'>
+                            <option value="">--Select Asset--</option>
+                        </select>
+                        <span asp-validation-for="AssetId" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="Identification" class="control-label"></label>
