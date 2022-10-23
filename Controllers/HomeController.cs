@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace OpenQMS.Controllers
 {
-    [AllowAnonymous]
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

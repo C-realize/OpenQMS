@@ -3,9 +3,10 @@
 
 @{
     ViewData["Title"] = "Log in";
+    Layout = "~/Views/Shared/_Login.cshtml";
 }
 
-<h1>@ViewData["Title"]</h1>
+@*<h1>@ViewData["Title"]</h1>
 <div class="row">
     <div class="col-md-4">
         <section>
@@ -39,9 +40,6 @@
                         <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
                     </p>
                     <p>
-                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a new user</a>
-                    </p>
-                    <p>
                         <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>
                     </p>
                 </div>
@@ -57,8 +55,10 @@
                 {
                     <div>
                         <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
+                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
+                                article
+                                about setting up this ASP.NET application to support logging in via external services
+                            </a>.
                         </p>
                     </div>
                 }
@@ -77,6 +77,62 @@
                 }
             }
         </section>
+    </div>
+</div>*@
+
+
+
+<div class="app-container app-theme-white body-tabs-shadow">
+    <div class="app-container">
+        <div class="h-100 bg-plum-plate bg-animation">
+            <div class="d-flex h-100 justify-content-center align-items-center">
+                <div class="mx-auto app-login-box col-md-8">
+                    <div class="app-logo-inverse mx-auto mb-3"></div>
+                    <div class="modal-dialog w-100 mx-auto">
+                        <div class="modal-content">
+                            <form id="account" method="post">
+                                <div class="modal-body">
+                                    <div class="h5 modal-title text-center">
+                                        <h4 class="mt-2">
+                                            <div>Welcome back,</div>
+                                            <span>Use a local account to log in.</span>
+                                        </h4>
+                                    </div>
+                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                    <div class="form-row">
+                                        <div class="col-md-12">
+                                            <div class="position-relative form-group">
+                                                <input asp-for="Input.Email" id="exampleEmail" class="form-control" placeholder="Email here..." autocomplete="username" aria-required="true" />
+                                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="position-relative form-group">
+                                                <input asp-for="Input.Password" id="examplePassword" class="form-control" placeholder="Password here..." autocomplete="current-password" aria-required="true" />
+                                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="position-relative form-check">
+                                        <input class="form-check-input" id="exampleCheck" asp-for="Input.RememberMe" />
+                                        <label for="exampleCheck" class="form-check-label">@Html.DisplayNameFor(m => m.Input.RememberMe)</label>
+                                    </div>
+                                    <div class="divider"></div>
+                                    <h6 class="mb-0"><a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a></h6>
+                                </div>
+                                <div class="modal-footer clearfix">
+                                    <div class="float-left"><a id="forgot-password" asp-page="./ForgotPassword" class="btn-lg btn btn-link">Forgot your password?</a></div>
+                                    <div class="float-right">
+                                        <button id="login-submit" type="submit" class="btn btn-primary btn-lg">Log in</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="text-center text-white opacity-8 mt-3"><a style="color: white" href="https://www-c-realize.com">©C-realize IT Services SRL</a></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

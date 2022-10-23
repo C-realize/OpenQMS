@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OpenQMS.Migrations
 {
-    public partial class CreateProductQMSSchema : Migration
+    public partial class CreateProductQMS : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

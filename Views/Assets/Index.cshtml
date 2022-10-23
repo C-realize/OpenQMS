@@ -48,9 +48,6 @@
                         @Html.DisplayNameFor(model => model.Version)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Status)
-                    </th>
-                    <th>
                         @Html.DisplayNameFor(model => model.EditedBy)
                     </th>
                     <th>
@@ -61,6 +58,9 @@
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.ApprovedOn)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Status)
                     </th>
                     <th>Action</th>
                 </tr>
@@ -76,9 +76,6 @@
                             @Html.DisplayFor(modelItem => item.Version)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Status)
-                        </td>
-                        <td>
                             @(item.EditedByUser == null ? "" : item.EditedByUser.UserName)
                         </td>
                         <td>
@@ -89,6 +86,9 @@
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.ApprovedOn)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Status)
                         </td>
                         <td>
                             <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary actionButton" asp-action="Edit" asp-route-id="@item.Id"><i class="pe-7s-tools btn-icon-wrapper"> </i></a>

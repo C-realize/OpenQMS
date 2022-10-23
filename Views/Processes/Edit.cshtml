@@ -1,18 +1,25 @@
-﻿@model OpenQMS.Models.Product
+﻿@model OpenQMS.Models.Process
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Create</h1>
+<h1>Edit</h1>
 
-<h4>Product</h4>
+<h4>Process</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Version" />
+            <input type="hidden" asp-for="EditedBy" value="@Model.EditedBy" />
+            <input type="hidden" asp-for="EditedOn" value="@Model.EditedOn" />
+            <input type="hidden" asp-for="ApprovedBy" value="@Model.ApprovedBy" />
+            <input type="hidden" asp-for="ApprovedOn" value="@Model.ApprovedOn" />
+            <input type="hidden" asp-for="Status" value="@Model.Status" />
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" required/>
@@ -25,7 +32,7 @@
             </div>
             <br />
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>

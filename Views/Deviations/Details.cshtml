@@ -42,7 +42,7 @@
                     </li>
                     <li class="nav-item">
                         <a role="tab" class="nav-link Detail_tabs" id="tab-1" data-toggle="tab" href="#tab-content-1">
-                            <span>Capa</span>
+                            <span>CAPA</span>
                         </a>
                     </li>
                 </ul>
@@ -68,15 +68,29 @@
                                 </div>
                                 <div class="row">
                                     <div class="col d-flex">
-                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Product.Name):</p>
-                                        <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
+                                        <p style="font-weight: bold;">Product:</p>
+                                        <p>
+                                            @if (Model.Product != null)
+                                            {
+                                                <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
+                                            }
+                                        </p>
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">Process:</p>
+                                        <p>
+                                            @if (Model.Process != null)
+                                            {
+                                                <a href="/Processes/Details/@Model.ProcessId">@Model.Process.Name</a>
+                                            }
+                                        </p>
                                     </div>
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">Asset:</p>
                                         <p>
                                             @if (Model.Asset != null)
                                             {
-                                                <a href="/Asset/Details/@Model.AssetId">@Model.Asset.Name</a>
+                                                <a href="/Assets/Details/@Model.AssetId">@Model.Asset.Name</a>
                                             }
                                         </p>
                                     </div>
@@ -88,20 +102,22 @@
                                             @Html.DisplayFor(model => model.Identification)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.IdentifiedBy):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.IdentifiedBy)
                                         </p>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.IdentifiedOn):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.IdentifiedOn)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Evaluation):</p>
                                         <p>
@@ -144,39 +160,39 @@
                                             @Html.DisplayFor(model => model.Resolution)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ResolvedBy):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ResolvedBy)
                                         </p>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ResolvedOn):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ResolvedOn)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ApprovedBy):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ApprovedBy)
                                         </p>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ApprovedOn):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ApprovedOn)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <a class="nav-link mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-4">
                                         <input type="hidden" id="DeviationId" value="@Model.Id" />
                                         @if (((User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole)) && Model.Status == OpenQMS.Models.Deviation.DeviationStatus.Evaluation) || ((User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole)) && Model.Status == OpenQMS.Models.Deviation.DeviationStatus.Resolution))

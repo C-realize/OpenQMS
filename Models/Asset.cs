@@ -27,8 +27,8 @@ namespace OpenQMS.Models
         [Display(Name = "Approved On")]
         public DateTime? ApprovedOn { get; set; }
         public virtual ICollection<Change>? Changes { get; set; }
-        public virtual ICollection<Deviation>? Deviation { get; set; }
-        public virtual ICollection<Capa>? Capa { get; set; }
+        public virtual ICollection<Deviation>? Deviations { get; set; }
+        public virtual ICollection<Capa>? Capas { get; set; }
         public AssetStatus Status { get; set; }
         public enum AssetStatus
         {

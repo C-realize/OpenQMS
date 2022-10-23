@@ -21,7 +21,7 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a asp-action="Index">Capa List</a>
+                    <a asp-action="Index">CAPA List</a>
                 </li>
                 <li class="active breadcrumb-item" aria-current="page">
                     <a asp-action="Details" asp-route-id="@Model.Id">Capa Details</a>
@@ -37,7 +37,7 @@
                 <ul class="nav nav-tabs z_nav">
                     <li class="nav-item">
                         <a role="tab" class="nav-link Detail_tabs active show" id="tab-0" data-toggle="tab" href="#tab-content-0">
-                            <span>Capa Info</span>
+                            <span>CAPA Info</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -69,17 +69,25 @@
                                 <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Product.Name):</p>
-                                        <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
+                                        @if (Model.Product != null)
+                                        {
+                                            <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
+                                        }
+                                    </div>
+                                    <div class="col d-flex">
+                                        <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Process.Name):</p>
+                                        @if (Model.Process != null)
+                                        {
+                                            <a href="/Processes/Details/@Model.ProcessId">@Model.Process.Name</a>
+                                        }
                                     </div>
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">Asset:</p>
                                         @if (Model.Asset != null)
                                         {
-                                            <a href="/Asset/Details/@Model.AssetId">@Model.Asset.Name</a>
+                                            <a href="/Assets/Details/@Model.AssetId">@Model.Asset.Name</a>
                                         }
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">Deviation:</p>
                                         @if (Model.Deviation != null)
@@ -87,6 +95,8 @@
                                             <a href="/Deviations/Details/@Model.DeviationId">@Model.Deviation.Title</a>
                                         }
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.CorrectiveAction):</p>
                                         <p>
@@ -101,20 +111,22 @@
                                             @Html.DisplayFor(model => model.PreventiveAction)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.DeterminedBy):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.DeterminedBy)
                                         </p>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.DeterminedOn):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.DeterminedOn)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.Assessment):</p>
                                         <p>
@@ -157,38 +169,41 @@
                                             @Html.DisplayFor(model => model.Implementation)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ImplementedBy):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ImplementedBy)
                                         </p>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ImplementedOn):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ImplementedOn)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ApprovedBy):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ApprovedBy)
                                         </p>
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ApprovedOn):</p>
                                         <p>
                                             @Html.DisplayFor(model => model.ApprovedOn)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <a class="nav-link mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
                                     </div>
                                 </div>
+                                <br />
                                 <div class="row">
                                     <div class="col-md-4">
                                         <input type="hidden" id="CapaId" value="@Model.Id" />

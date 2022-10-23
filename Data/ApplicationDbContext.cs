@@ -31,5 +31,6 @@ namespace OpenQMS.Data
         public DbSet<OpenQMS.Models.Capa>? Capa { get; set; }
         public DbSet<OpenQMS.Models.Deviation>? Deviation { get; set; }
         public DbSet<OpenQMS.Models.Asset> Asset { get; set; }
+        public DbSet<OpenQMS.Models.Process> Process { get; set; }
     }
 }

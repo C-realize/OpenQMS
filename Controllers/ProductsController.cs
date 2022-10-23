@@ -50,8 +50,8 @@ namespace OpenQMS.Controllers
                 .Include(a => a.EditedByUser)
                 .Include(a => a.ApprovedByUser)
                 .Include(a => a.Changes)
-                .Include(a => a.Deviation)
-                .Include(a => a.Capa)
+                .Include(a => a.Deviations)
+                .Include(a => a.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (product == null)
@@ -224,10 +224,10 @@ namespace OpenQMS.Controllers
 
             var product = await _context.Product
                 .Include(p => p.Changes)
-                .Include(p => p.Deviation)
-                .Include(p => p.Capa)
-                .Include(p=>p.EditedByUser)
-                .Include(p=>p.ApprovedByUser)
+                .Include(p => p.Deviations)
+                .Include(p => p.Capas)
+                .Include(p => p.EditedByUser)
+                .Include(p => p.ApprovedByUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (product == null)
@@ -250,8 +250,8 @@ namespace OpenQMS.Controllers
 
             var product = await _context.Product
                 .Include(p => p.Changes)
-                .Include(p => p.Deviation)
-                .Include(p => p.Capa)
+                .Include(p => p.Deviations)
+                .Include(p => p.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (product != null)

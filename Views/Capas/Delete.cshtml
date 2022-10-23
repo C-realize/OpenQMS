@@ -17,12 +17,40 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Title)
         </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Product.Name)
-        </dt>
-        <dd class="col-sm-10">
-            <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
-        </dd>
+        @if (Model.Product != null)
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Product.Name)
+            </dt>
+            <dd class="col-sm-10">
+                <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
+            </dd>
+        }
+        else
+        {
+            <dt class="col-sm-2">
+                Process
+            </dt>
+            <dd class="col-sm-10">
+            </dd>
+        }
+                @if (Model.Process != null)
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Process.Name)
+            </dt>
+            <dd class="col-sm-10">
+                <a href="/Processes/Details/@Model.ProcessId">@Model.Process.Name</a>
+            </dd>
+        }
+        else
+        {
+            <dt class="col-sm-2">
+                Product
+            </dt>
+            <dd class="col-sm-10">
+            </dd>
+        }
         @if (Model.Asset != null)
         {
             <dt class="col-sm-2">
@@ -40,12 +68,23 @@
             <dd class="col-sm-10">
             </dd>
         }
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Deviation)
-        </dt>
-        <dd class="col-sm-10">
-            <a href="/Deviation/Details/@Model.DeviationId">@Model.Deviation.Title</a>
-        </dd>
+        @if (Model.Deviation != null)
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Deviation.Title)
+            </dt>
+            <dd class="col-sm-10">
+                <a href="/Deviations/Details/@Model.DeviationId">@Model.Deviation.Title</a>
+            </dd>
+        }
+        else
+        {
+            <dt class="col-sm-2">
+                Deviation
+            </dt>
+            <dd class="col-sm-10">
+            </dd>
+        }
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.CorrectiveAction)
         </dt>

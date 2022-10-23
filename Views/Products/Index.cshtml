@@ -59,6 +59,9 @@
                         @Html.DisplayNameFor(model => model.EditedBy)
                     </th>
                     <th>
+                        @Html.DisplayNameFor(model => model.EditedOn)
+                    </th>
+                    <th>
                         @Html.DisplayNameFor(model => model.ApprovedBy)
                     </th>
                     <th>
@@ -82,6 +85,9 @@
                         </td>
                         <td>
                             @(item.EditedByUser == null ? "" : item.EditedByUser.UserName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EditedOn)
                         </td>
                         <td>
                             @(item.ApprovedByUser == null ? "" : item.ApprovedByUser.UserName)

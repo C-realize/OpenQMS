@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Create";
     var products =(List<Product>)ViewData["Products"];
+    var process = (List<Process>)ViewData["Processes"];
     var assets =(List<Asset>)ViewData["Assets"];
     var deviations =(List<Deviation>)ViewData["Deviations"];
 }
@@ -24,9 +25,16 @@
             <div class="form-group">
                 <label>Product</label>
                 <select asp-for ="ProductId" class="form-control" asp-items='new SelectList(products,"Id","Name")'>
-                    <option value="0">--SelectProduct--</option>
+                    <option value="">--Select Product--</option>
                 </select>
                 <span asp-validation-for="ProductId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Process</label>
+                <select asp-for="ProcessId" class="form-control" asp-items='new SelectList(process,"Id","Name")'>
+                    <option value="">--Select Process-</option>
+                </select>
+                <span asp-validation-for="ProcessId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label>Asset</label>
@@ -38,18 +46,18 @@
             <div class="form-group">
                 <label>Deviation</label>
                 <select asp-for ="DeviationId" class="form-control" asp-items='new SelectList(deviations,"Id","Title")'>
-                    <option value="0">--Select Deviation--</option>
+                    <option value="">--Select Deviation--</option>
                 </select>
                 <span asp-validation-for="DeviationId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="CorrectiveAction" class="control-label"></label>
-                <input asp-for="CorrectiveAction" class="form-control" />
+                <textarea asp-for="CorrectiveAction" class="form-control"></textarea>
                 <span asp-validation-for="CorrectiveAction" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="PreventiveAction" class="control-label"></label>
-                <input asp-for="PreventiveAction" class="form-control" />
+                <textarea asp-for="PreventiveAction" class="form-control"></textarea>
                 <span asp-validation-for="PreventiveAction" class="text-danger"></span>
             </div>
             <div class="form-group">

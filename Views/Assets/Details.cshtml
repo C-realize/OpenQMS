@@ -1,4 +1,4 @@
-﻿@model OpenQMS.Models.Product
+﻿@model OpenQMS.Models.Asset
 
 @{
     ViewData["Title"] = "Details";
@@ -22,10 +22,10 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a asp-action="Index">Products List</a>
+                    <a asp-action="Index">Assets List</a>
                 </li>
                 <li class="active breadcrumb-item" aria-current="page">
-                    <a asp-action="Details" asp-route-id="@Model.Id">Product Details</a>
+                    <a asp-action="Details" asp-route-id="@Model.Id">Asset Details</a>
                 </li>
             </ol>
         </nav>
@@ -38,7 +38,7 @@
                 <ul class="nav nav-tabs z_nav">
                     <li class="nav-item">
                         <a role="tab" class="nav-link Detail_tabs active show" id="tab-0" data-toggle="tab" href="#tab-content-0">
-                            <span>Product Info</span>
+                            <span>Asset Info</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -128,7 +128,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col d-flex">
-                                    @if ((User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole)) && Model.Status == OpenQMS.Models.Product.ProductStatus.Draft)
+                                    @if ((User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole)) && Model.Status == OpenQMS.Models.Asset.AssetStatus.Draft)
                                     {
                                         <form style="display:inline;" method="post">
                                             <input type="hidden" asp-for="Id" />

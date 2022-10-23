@@ -45,7 +45,13 @@
                         @Html.DisplayNameFor(model => model.Title)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Proposal)
+                        @Html.DisplayNameFor(model => model.Product)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Process)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Asset)
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.ProposedBy)
@@ -55,9 +61,6 @@
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.Status)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Asset)
                     </th>
                     <th>Action</th>
                 </tr>
@@ -69,19 +72,28 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.Title)
                         </td>
-
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Proposal)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.ProposedBy)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.ProposedOn)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Status)
-                        </td>
+                        @if (item.Product != null)
+                        {
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Product.Name)
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                            </td>
+                        }
+                        @if (item.Process != null)
+                        {
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Process.Name)
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                            </td>
+                        }
                         @if (item.Asset != null)
                         {
                             <td>
@@ -93,6 +105,15 @@
                             <td>
                             </td>
                         }
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ProposedBy)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ProposedOn)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Status)
+                        </td>
                         <td>
                             <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary actionButton" asp-action="Edit" asp-route-id="@item.Id"><i class="pe-7s-tools btn-icon-wrapper"> </i></a>
                             <a class="mb-2 mr-2 btn-icon btn-pill btn btn-outline-warning actionButton" asp-action="Delete" asp-route-id="@item.Id"><i class="pe-7s-trash btn-icon-wrapper"> </i></a>

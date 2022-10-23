@@ -34,7 +34,7 @@ namespace OpenQMS.Controllers
         // GET: Deviations
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Deviation.Include(d => d.Product).Include(d => d.Asset);
+            var applicationDbContext = _context.Deviation.Include(d => d.Product).Include(d=>d.Process).Include(d => d.Asset);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -49,6 +49,7 @@ namespace OpenQMS.Controllers
             var deviation = await _context.Deviation
                 .Include(d => d.Capas)
                 .Include(d => d.Product)
+                .Include(d => d.Process)
                 .Include(d => d.Asset)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (deviation == null)
@@ -68,6 +69,7 @@ namespace OpenQMS.Controllers
         public IActionResult Create()
         {
             ViewData["Products"] = _context.Product.ToList();
+            ViewData["Processes"] = _context.Process.ToList();
             ViewData["Assets"] = _context.Asset.ToList();
             return View();
         }
@@ -77,7 +79,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,ProductId,AssetId,Identification,IdentifiedBy")] Deviation deviation)
+        public async Task<IActionResult> Create([Bind("Title,ProductId,ProcessId,AssetId,Identification,IdentifiedBy")] Deviation deviation)
         {
             try
             {
@@ -114,6 +116,7 @@ namespace OpenQMS.Controllers
             }
 
             ViewData["Products"] = _context.Product.ToList();
+            ViewData["Processes"] = _context.Process.ToList();
             ViewData["Assets"] = _context.Asset.ToList();
             return View(deviation);
         }
@@ -123,7 +126,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ProductId,AssetId,Identification,IdentifiedBy,IdentifiedOn,Evaluation,EvaluatedBy,EvaluatedOn,AcceptedBy,AcceptedOn,Resolution,Status")] Deviation deviation)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ProductId,ProcessId,AssetId,Identification,IdentifiedBy,IdentifiedOn,Evaluation,EvaluatedBy,EvaluatedOn,AcceptedBy,AcceptedOn,Resolution,Status")] Deviation deviation)
         {
             if (id != deviation.Id)
             {
@@ -177,6 +180,7 @@ namespace OpenQMS.Controllers
             var deviation = await _context.Deviation
                 .Include(d => d.Capas)
                 .Include(d => d.Product)
+                .Include(d => d.Process)
                 .Include(d => d.Asset)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (deviation == null)
@@ -200,6 +204,7 @@ namespace OpenQMS.Controllers
             var deviation = await _context.Deviation
                            .Include(d => d.Capas)
                            .Include(d => d.Product)
+                           .Include(d => d.Process)
                            .Include(d => d.Asset)
                            .FirstOrDefaultAsync(m => m.Id == id);
             if (deviation != null)

@@ -7,20 +7,20 @@ using OpenQMS.Models;
 
 namespace OpenQMS.Controllers
 {
-    public class AssetController : Controller
+    public class AssetsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
 
-        public AssetController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AssetsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
         }
 
-        // GET: Asset
+        // GET: Assets
         public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
@@ -31,13 +31,13 @@ namespace OpenQMS.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Asset/Create
+        // GET: Assets/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Asset/Create
+        // POST: Assets/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Description")] Asset asset)
@@ -63,7 +63,7 @@ namespace OpenQMS.Controllers
             return View(asset);
         }
 
-        // GET: Asset/Edit/5
+        // GET: Assets/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Asset == null)
@@ -80,7 +80,7 @@ namespace OpenQMS.Controllers
             return View(asset);
         }
 
-        // POST: Asset/Edit/5
+        // POST: Assets/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Version,EditedBy,EditedOn,ApprovedBy,ApprovedOn,Status")] Asset Asset)
@@ -119,7 +119,7 @@ namespace OpenQMS.Controllers
             return View(Asset);
         }
 
-        // GET: Asset/Delete/5
+        // GET: Assets/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Asset == null)
@@ -129,8 +129,8 @@ namespace OpenQMS.Controllers
 
             var asset = await _context.Asset
                 .Include(p => p.Changes)
-                .Include(p => p.Deviation)
-                .Include(p => p.Capa)
+                .Include(p => p.Deviations)
+                .Include(p => p.Capas)
                 .Include(p => p.EditedByUser)
                 .Include(p => p.ApprovedByUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -143,7 +143,7 @@ namespace OpenQMS.Controllers
             return View(asset);
         }
 
-        // POST: Asset/Delete/5
+        // POST: Assets/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -155,8 +155,8 @@ namespace OpenQMS.Controllers
 
             var asset = await _context.Asset
                 .Include(p => p.Changes)
-                .Include(p => p.Deviation)
-                .Include(p => p.Capa)
+                .Include(p => p.Deviations)
+                .Include(p => p.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (asset != null)
@@ -168,7 +168,7 @@ namespace OpenQMS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Asset/Details/5
+        // GET: Assets/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Asset == null)
@@ -180,8 +180,8 @@ namespace OpenQMS.Controllers
                 .Include(a => a.EditedByUser)
                 .Include(a => a.ApprovedByUser)
                 .Include(a => a.Changes)
-                .Include(a => a.Deviation)
-                .Include(a => a.Capa)
+                .Include(a => a.Deviations)
+                .Include(a => a.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (asset == null)
@@ -192,7 +192,7 @@ namespace OpenQMS.Controllers
             return View(asset);
         }
 
-        // POST: Asset/Details/5
+        // POST: Assets/Details/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Details(int id, [Bind("Id,Name,Description,Version,EditedBy,EditedOn,Status")] Asset asset, string InputEmail, string InputPassword)

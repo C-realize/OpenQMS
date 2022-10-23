@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Create";
     var products =(List<Product>)ViewData["Products"];
+    var processes = (List<Process>)ViewData["Processes"];
     var assets =(List<Asset>)ViewData["Assets"];
 }
 
@@ -21,16 +22,18 @@
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Identification" class="control-label"></label>
-                <input asp-for="Identification" class="form-control" />
-                <span asp-validation-for="Identification" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label>Product</label>
                 <select asp-for="ProductId" class="form-control" asp-items='new SelectList(products,"Id","Name")'>
-                    <option value="0">--SelectProduct--</option>
+                    <option value="">--Select Product--</option>
                 </select>
                 <span asp-validation-for="ProductId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Process</label>
+                <select asp-for="ProcessId" class="form-control" asp-items='new SelectList(processes,"Id","Name")'>
+                    <option value="">--Select Process--</option>
+                </select>
+                <span asp-validation-for="ProcessId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label>Asset</label>
@@ -38,6 +41,11 @@
                     <option value="">--Select Asset--</option>
                 </select>
                 <span asp-validation-for="AssetId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Identification" class="control-label"></label>
+                <textarea asp-for="Identification" class="form-control"></textarea>
+                <span asp-validation-for="Identification" class="text-danger"></span>
             </div>
             <br />
             <div class="form-group">

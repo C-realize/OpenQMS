@@ -81,6 +81,25 @@
                                             @Html.DisplayFor(model => model.TrainerEmail)
                                         </p>
                                     </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col d-flex">
+                                        <table class="table">
+                                            <tr>
+                                                <th>Trainees</th>
+                                            </tr>
+                                            @foreach (var item in Model.Trainees)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.Trainee.Email)
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col d-flex">
                                         <a class="nav-link mb-2 mr-2 btn-icon btn-pill btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
                                     </div>

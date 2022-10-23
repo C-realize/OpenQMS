@@ -1,4 +1,4 @@
-﻿@model OpenQMS.Models.Asset
+﻿@model OpenQMS.Models.Process
 
 @{
     ViewData["Title"] = "Details";
@@ -22,10 +22,10 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a asp-action="Index">Assets List</a>
+                    <a asp-action="Index">Processes List</a>
                 </li>
                 <li class="active breadcrumb-item" aria-current="page">
-                    <a asp-action="Details" asp-route-id="@Model.Id">Asset Details</a>
+                    <a asp-action="Details" asp-route-id="@Model.Id">Process Details</a>
                 </li>
             </ol>
         </nav>
@@ -38,7 +38,7 @@
                 <ul class="nav nav-tabs z_nav">
                     <li class="nav-item">
                         <a role="tab" class="nav-link Detail_tabs active show" id="tab-0" data-toggle="tab" href="#tab-content-0">
-                            <span>Asset Info</span>
+                            <span>Process Info</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -48,12 +48,12 @@
                     </li>
                     <li class="nav-item">
                         <a role="tab" class="nav-link Detail_tabs" id="tab-2" data-toggle="tab" href="#tab-content-2">
-                            <span>Deviation</span>
+                            <span>Deviations</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a role="tab" class="nav-link Detail_tabs" id="tab-3" data-toggle="tab" href="#tab-content-3">
-                            <span>Capa</span>
+                            <span>CAPA</span>
                         </a>
                     </li>
                 </ul>
@@ -95,7 +95,7 @@
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.EditedBy):</p>
                                         <p>
-                                            @Html.DisplayFor(model => model.EditedByUser.UserName)
+                                            @Html.DisplayFor(model => model.EditedBy)
                                         </p>
                                     </div>
                                     <div class="col d-flex">
@@ -109,7 +109,7 @@
                                     <div class="col d-flex">
                                         <p style="font-weight: bold;">@Html.DisplayNameFor(model => model.ApprovedBy):</p>
                                         <p>
-                                            @Html.DisplayFor(model => model.ApprovedByUser.UserName)
+                                            @Html.DisplayFor(model => model.ApprovedBy)
                                         </p>
                                     </div>
                                     <div class="col d-flex">
@@ -127,33 +127,21 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col d-flex">
-                                    @if ((User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole)) && Model.Status == OpenQMS.Models.Asset.AssetStatus.Draft)
-                                    {
-                                        <form style="display:inline;" method="post">
-                                            <input type="hidden" asp-for="Id" />
-                                            <input type="hidden" asp-for="Name" />
-                                            <input type="hidden" asp-for="Description" />
-                                            <input type="hidden" asp-for="Version" />
-                                            <input type="hidden" asp-for="EditedBy" />
-                                            <input type="hidden" asp-for="EditedOn" />
-                                            <input type="hidden" asp-for="Status" />
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="form-group">
-                                                        <label>Email</label>
-                                                        <input type="email" name="InputEmail" id="InputEmail" class="form-control" />
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Password</label>
-                                                        <input type="password" name="InputPassword" id="InputPassword" class="form-control" />
-                                                    </div>
-                                                </div>
+                                    <div class="col-md-4">
+                                        <input type="hidden" id="ProcessId" value="@Model.Id" />
+                                        @if ((User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole)) && Model.Status == OpenQMS.Models.Process.ProcessStatus.Draft)
+                                        {
+                                            <div class="form-group">
+                                                <label>Email</label>
+                                                <input type="email" name="InputEmail" id="InputEmail" class="form-control" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Password</label>
+                                                <input type="password" name="InputPassword" id="InputPassword" class="form-control" />
                                             </div>
                                             <br />
-                                            <button type="submit" class="btn btn-success">Approved</button>
-                                        </form>
-                                    }
+                                            <button class="btn btn-success" id="btnApproved">Approve</button>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -199,9 +187,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (Model.Deviation != null)
+                                @if (Model.Deviations != null)
                                 {
-                                    foreach (var item in Model.Deviation)
+                                    foreach (var item in Model.Deviations)
                                     {
                                         <tr>
                                             <td><a href="/Deviations/Details/@item.Id">@item.Title</a></td>
@@ -226,9 +214,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (Model.Capa != null)
+                                @if (Model.Capas != null)
                                 {
-                                    foreach (var item in Model.Capa)
+                                    foreach (var item in Model.Capas)
                                     {
                                         <tr>
                                             <td>
@@ -247,3 +235,13 @@
         </div>
     </div>
 </div>
+
+@section Scripts
+    {
+    <script>
+        $('#btnApproved').click(function () {
+
+            window.location.href = '/Processes/Approved?id=' + $('#ProcessId').val() + '&email=' + $('#InputEmail').val() + '&pwd=' + $('#InputPassword').val();
+        });
+    </script>
+}

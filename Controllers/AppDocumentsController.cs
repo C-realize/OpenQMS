@@ -645,7 +645,7 @@ namespace OpenQMS.Controllers
                 .SetReuseAppearance(false)
                 .SetPageRect(rect)
                 .SetPageNumber(1)
-                .SetLayer2Text("Hao Wang" + System.Environment.NewLine + DateTime.Now.ToShortDateString())
+                .SetLayer2Text("Demo" + System.Environment.NewLine + DateTime.Now.ToShortDateString())
                 .SetLayer2FontSize(16);
             signer.SetFieldName("DigitalSignature");
 

@@ -1,14 +1,15 @@
-﻿@model IEnumerable<OpenQMS.Models.Deviation>
+﻿@model IEnumerable<OpenQMS.Models.Process>
 
 @{
     ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="app-page-title">
     <div class="page-title-wrapper">
         <div class="page-title-heading">
             <div>
-                Deviations
+                Processes
             </div>
         </div>
         <div class="page-title-actions">
@@ -29,6 +30,14 @@
                                 </span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="ExportProducts">
+                                <i class="nav-link-icon lnr-book"></i>
+                                <span>
+                                    Export
+                                </span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -41,22 +50,22 @@
             <thead>
                 <tr>
                     <th>
-                        @Html.DisplayNameFor(model => model.Title)
+                        Name
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Product)
+                        @Html.DisplayNameFor(model => model.Version)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Process)
+                        @Html.DisplayNameFor(model => model.EditedBy)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Asset)
+                        @Html.DisplayNameFor(model => model.EditedOn)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.IdentifiedBy)
+                        @Html.DisplayNameFor(model => model.ApprovedBy)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.IdentifiedOn)
+                        @Html.DisplayNameFor(model => model.ApprovedOn)
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.Status)
@@ -69,46 +78,22 @@
                 {
                     <tr>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Title)
-                        </td>
-                        @if (item.Product != null)
-                        {
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Product.Name)
-                            </td>
-                        }
-                        else
-                        {
-                            <td>
-                            </td>
-                        }
-                        @if (item.Process != null)
-                        {
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Process.Name)
-                            </td>
-                        }
-                        else
-                        {
-                            <td>
-                            </td>
-                        }
-                        @if (item.Asset != null)
-                        {
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Asset.Name)
-                            </td>
-                        }
-                        else
-                        {
-                            <td>
-                            </td>
-                        }
-                        <td>
-                            @Html.DisplayFor(modelItem => item.IdentifiedBy)
+                            @Html.DisplayFor(modelItem => item.Name)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.IdentifiedOn)
+                            @Html.DisplayFor(modelItem => item.Version)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EditedBy)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EditedOn)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApprovedBy)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApprovedOn)
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.Status)

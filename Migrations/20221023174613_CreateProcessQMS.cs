@@ -5,30 +5,30 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OpenQMS.Migrations
 {
-    public partial class CreateAssetSchema : Migration
+    public partial class CreateProcessQMS : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
-                name: "AssetId",
+                name: "ProcessId",
                 table: "Deviation",
                 type: "int",
                 nullable: true);
 
             migrationBuilder.AddColumn<int>(
-                name: "AssetId",
+                name: "ProcessId",
                 table: "Change",
                 type: "int",
                 nullable: true);
 
             migrationBuilder.AddColumn<int>(
-                name: "AssetId",
+                name: "ProcessId",
                 table: "Capa",
                 type: "int",
                 nullable: true);
 
             migrationBuilder.CreateTable(
-                name: "Asset",
+                name: "Process",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -36,113 +36,93 @@ namespace OpenQMS.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Version = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    EditedBy = table.Column<int>(type: "int", nullable: true),
+                    EditedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     EditedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ApprovedBy = table.Column<int>(type: "int", nullable: true),
+                    ApprovedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ApprovedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Asset", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Asset_AspNetUsers_ApprovedBy",
-                        column: x => x.ApprovedBy,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Asset_AspNetUsers_EditedBy",
-                        column: x => x.EditedBy,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                    table.PrimaryKey("PK_Process", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Deviation_AssetId",
+                name: "IX_Deviation_ProcessId",
                 table: "Deviation",
-                column: "AssetId");
+                column: "ProcessId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Change_AssetId",
+                name: "IX_Change_ProcessId",
                 table: "Change",
-                column: "AssetId");
+                column: "ProcessId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Capa_AssetId",
+                name: "IX_Capa_ProcessId",
                 table: "Capa",
-                column: "AssetId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Asset_ApprovedBy",
-                table: "Asset",
-                column: "ApprovedBy");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Asset_EditedBy",
-                table: "Asset",
-                column: "EditedBy");
+                column: "ProcessId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Capa_Asset_AssetId",
+                name: "FK_Capa_Process_ProcessId",
                 table: "Capa",
-                column: "AssetId",
-                principalTable: "Asset",
+                column: "ProcessId",
+                principalTable: "Process",
                 principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Change_Asset_AssetId",
+                name: "FK_Change_Process_ProcessId",
                 table: "Change",
-                column: "AssetId",
-                principalTable: "Asset",
+                column: "ProcessId",
+                principalTable: "Process",
                 principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Deviation_Asset_AssetId",
+                name: "FK_Deviation_Process_ProcessId",
                 table: "Deviation",
-                column: "AssetId",
-                principalTable: "Asset",
+                column: "ProcessId",
+                principalTable: "Process",
                 principalColumn: "Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Capa_Asset_AssetId",
+                name: "FK_Capa_Process_ProcessId",
                 table: "Capa");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_Change_Asset_AssetId",
+                name: "FK_Change_Process_ProcessId",
                 table: "Change");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_Deviation_Asset_AssetId",
+                name: "FK_Deviation_Process_ProcessId",
                 table: "Deviation");
 
             migrationBuilder.DropTable(
-                name: "Asset");
+                name: "Process");
 
             migrationBuilder.DropIndex(
-                name: "IX_Deviation_AssetId",
+                name: "IX_Deviation_ProcessId",
                 table: "Deviation");
 
             migrationBuilder.DropIndex(
-                name: "IX_Change_AssetId",
+                name: "IX_Change_ProcessId",
                 table: "Change");
 
             migrationBuilder.DropIndex(
-                name: "IX_Capa_AssetId",
+                name: "IX_Capa_ProcessId",
                 table: "Capa");
 
             migrationBuilder.DropColumn(
-                name: "AssetId",
+                name: "ProcessId",
                 table: "Deviation");
 
             migrationBuilder.DropColumn(
-                name: "AssetId",
+                name: "ProcessId",
                 table: "Change");
 
             migrationBuilder.DropColumn(
-                name: "AssetId",
+                name: "ProcessId",
                 table: "Capa");
         }
     }

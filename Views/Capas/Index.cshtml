@@ -47,10 +47,10 @@
                         @Html.DisplayNameFor(model => model.Product)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Asset)
+                        @Html.DisplayNameFor(model => model.Process)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Deviation)
+                        @Html.DisplayNameFor(model => model.Asset)
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.DeterminedBy)
@@ -71,9 +71,28 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.Title)
                         </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Product.Name)
-                        </td>
+                        @if (item.Product != null)
+                        {
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Product.Name)
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                            </td>
+                        }
+                        @if (item.Process != null)
+                        {
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Process.Name)
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                            </td>
+                        }
                         @if (item.Asset != null)
                         {
                             <td>
@@ -85,9 +104,6 @@
                             <td>
                             </td>
                         }
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Deviation.Title)
-                        </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.DeterminedBy)
                         </td>
