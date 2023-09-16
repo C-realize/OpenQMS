@@ -11,53 +11,65 @@
 <hr />
 <div>
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
+            Id
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DocumentId)
+        </dd>
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Title)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Version)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Version)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Status)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Status)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             Authored By
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.AuthoredBy)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             Authored On
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.AuthoredOn)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             Approved By
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ApprovedBy)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             Approved On
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ApprovedOn)
+        </dd>
+        <dt class="col-sm-2">
+            File Path
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.FilePath)
         </dd>
     </dl>
     <a type="button" class="btn btn-primary" asp-action="DownloadFile" asp-route-id="@Model.Id">Download</a>
@@ -66,9 +78,9 @@
 <br />
 <div class="row">
     <div class="col-md-4">
-        @if(Model.Status != AppDocument.DocumentStatus.Approved)
+        @if (Model.Status != AppDocument.DocumentStatus.Approved && Model.Status != AppDocument.DocumentStatus.Obsolete)
         {
-            @if((await AuthorizationService.AuthorizeAsync(User, Model, DocumentOperations.Approve)).Succeeded)
+            @if ((await AuthorizationService.AuthorizeAsync(User, Model, DocumentOperations.Approve)).Succeeded)
             {
                 <form style="display:inline;" method="post">
                     <input type="hidden" name="id" value="@Model.Id" />
@@ -82,20 +94,21 @@
                         <label>Password</label>
                         <input type="password" name="InputPassword" class="form-control" />
                     </div>
+                    <br />
                     <button type="submit" class="btn btn-xs btn-success">Approve</button>
                 </form>
             }
         }
 
-        @if((Model.Status != AppDocument.DocumentStatus.Approved) && (Model.Status != AppDocument.DocumentStatus.Rejected))
+        @if ((Model.Status != AppDocument.DocumentStatus.Approved) && (Model.Status != AppDocument.DocumentStatus.Rejected) && (Model.Status != AppDocument.DocumentStatus.Obsolete))
         {
-            @if((await AuthorizationService.AuthorizeAsync(User, Model, DocumentOperations.Reject)).Succeeded)
+            @if ((await AuthorizationService.AuthorizeAsync(User, Model, DocumentOperations.Reject)).Succeeded)
             {
                 <form style="display:inline;" method="post">
-                <input type="hidden" name="id" value="@Model.Id" />
-                <input type="hidden" name="title" value="@Model.Title" />
-                <input type="hidden" name="status" value="Rejected" />
-                <button type="submit" class="btn btn-xs btn-danger">Reject</button>
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="hidden" name="title" value="@Model.Title" />
+                    <input type="hidden" name="status" value="Rejected" />
+                    <button type="submit" class="btn btn-xs btn-danger">Reject</button>
                 </form>
             }
         }
@@ -106,8 +119,8 @@
     <br />
     @if ((await AuthorizationService.AuthorizeAsync(User, Model, DocumentOperations.Update)).Succeeded)
     {
-            <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> 
-            <text>|</text>
+        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <text>|</text>
     }
     <a asp-action="Index">Back to List</a>
 </div>

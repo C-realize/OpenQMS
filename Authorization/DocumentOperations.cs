@@ -5,7 +5,7 @@ namespace OpenQMS.Authorization
     public class DocumentOperations
     {
         public static OperationAuthorizationRequirement Create =
-  new OperationAuthorizationRequirement { Name = Constants.CreateOperationName };
+          new OperationAuthorizationRequirement { Name = Constants.CreateOperationName };
         public static OperationAuthorizationRequirement Read =
           new OperationAuthorizationRequirement { Name = Constants.ReadOperationName };
         public static OperationAuthorizationRequirement Update =

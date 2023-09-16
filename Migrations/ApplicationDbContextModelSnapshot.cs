@@ -17,7 +17,7 @@ namespace OpenQMS.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.5")
+                .HasAnnotation("ProductVersion", "6.0.21")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -157,12 +157,25 @@ namespace OpenQMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DocumentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FileExtension")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FileType")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GeneratedFrom")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsLocked")
@@ -175,8 +188,8 @@ namespace OpenQMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Version")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Version")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -292,6 +305,406 @@ namespace OpenQMS.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("OpenQMS.Models.Asset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("ApprovedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssetId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EditedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EditedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GeneratedFrom")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProcessId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Version")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("EditedBy");
+
+                    b.HasIndex("ProcessId");
+
+                    b.ToTable("Asset");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Capa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AcceptedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AcceptedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssessedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AssessedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Assessment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AssetId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CapaId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CorrectiveAction")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeterminedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DeterminedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeviationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Implementation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImplementedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ImplementedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MaterialId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PreventiveAction")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProcessId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.HasIndex("DeviationId");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("ProcessId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Capa");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Change", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AcceptedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AcceptedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssessedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AssessedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Assessment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AssetId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CapaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ChangeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Implementation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImplementedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ImplementedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MaterialId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProcessId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Proposal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProposedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ProposedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.HasIndex("CapaId");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("ProcessId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Change");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Deviation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AcceptedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AcceptedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("AssetId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DeviationId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EvaluatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EvaluatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Evaluation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Identification")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdentifiedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("IdentifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("MaterialId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProcessId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Resolution")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResolvedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResolvedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("ProcessId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Deviation");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Material", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("ApprovedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EditedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EditedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GeneratedFrom")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MaterialId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProcessId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Version")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("EditedBy");
+
+                    b.HasIndex("ProcessId");
+
+                    b.ToTable("Material");
+                });
+
             modelBuilder.Entity("OpenQMS.Models.Navigation.UserTraining", b =>
                 {
                     b.Property<int>("TraineeId")
@@ -307,6 +720,119 @@ namespace OpenQMS.Migrations
                     b.ToTable("UserTraining", (string)null);
                 });
 
+            modelBuilder.Entity("OpenQMS.Models.Process", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EditedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EditedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GeneratedFrom")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProcessId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Version")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Process");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("ApprovedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EditedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EditedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExportFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GeneratedFrom")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Version")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("EditedBy");
+
+                    b.ToTable("Product");
+                });
+
             modelBuilder.Entity("OpenQMS.Models.Training", b =>
                 {
                     b.Property<int>("Id")
@@ -314,6 +840,12 @@ namespace OpenQMS.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int?>("CompletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedOn")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -333,6 +865,9 @@ namespace OpenQMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("TrainerEmail")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -341,7 +876,13 @@ namespace OpenQMS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TrainingId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CompletedBy");
 
                     b.ToTable("Training");
                 });
@@ -397,6 +938,141 @@ namespace OpenQMS.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("OpenQMS.Models.Asset", b =>
+                {
+                    b.HasOne("OpenQMS.Models.AppUser", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedBy");
+
+                    b.HasOne("OpenQMS.Models.AppUser", "EditedByUser")
+                        .WithMany()
+                        .HasForeignKey("EditedBy");
+
+                    b.HasOne("OpenQMS.Models.Process", "Process")
+                        .WithMany("Assets")
+                        .HasForeignKey("ProcessId");
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("EditedByUser");
+
+                    b.Navigation("Process");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Capa", b =>
+                {
+                    b.HasOne("OpenQMS.Models.Asset", "Asset")
+                        .WithMany("Capas")
+                        .HasForeignKey("AssetId");
+
+                    b.HasOne("OpenQMS.Models.Deviation", "Deviation")
+                        .WithMany("Capas")
+                        .HasForeignKey("DeviationId");
+
+                    b.HasOne("OpenQMS.Models.Material", "Material")
+                        .WithMany("Capas")
+                        .HasForeignKey("MaterialId");
+
+                    b.HasOne("OpenQMS.Models.Process", "Process")
+                        .WithMany("Capas")
+                        .HasForeignKey("ProcessId");
+
+                    b.HasOne("OpenQMS.Models.Product", "Product")
+                        .WithMany("Capa")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Asset");
+
+                    b.Navigation("Deviation");
+
+                    b.Navigation("Material");
+
+                    b.Navigation("Process");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Change", b =>
+                {
+                    b.HasOne("OpenQMS.Models.Asset", "Asset")
+                        .WithMany("Changes")
+                        .HasForeignKey("AssetId");
+
+                    b.HasOne("OpenQMS.Models.Capa", "Capa")
+                        .WithMany("Changes")
+                        .HasForeignKey("CapaId");
+
+                    b.HasOne("OpenQMS.Models.Material", "Material")
+                        .WithMany("Changes")
+                        .HasForeignKey("MaterialId");
+
+                    b.HasOne("OpenQMS.Models.Process", "Process")
+                        .WithMany("Changes")
+                        .HasForeignKey("ProcessId");
+
+                    b.HasOne("OpenQMS.Models.Product", "Product")
+                        .WithMany("Changes")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Asset");
+
+                    b.Navigation("Capa");
+
+                    b.Navigation("Material");
+
+                    b.Navigation("Process");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Deviation", b =>
+                {
+                    b.HasOne("OpenQMS.Models.Asset", "Asset")
+                        .WithMany("Deviations")
+                        .HasForeignKey("AssetId");
+
+                    b.HasOne("OpenQMS.Models.Material", "Material")
+                        .WithMany("Deviations")
+                        .HasForeignKey("MaterialId");
+
+                    b.HasOne("OpenQMS.Models.Process", "Process")
+                        .WithMany("Deviations")
+                        .HasForeignKey("ProcessId");
+
+                    b.HasOne("OpenQMS.Models.Product", "Product")
+                        .WithMany("Deviation")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Asset");
+
+                    b.Navigation("Material");
+
+                    b.Navigation("Process");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Material", b =>
+                {
+                    b.HasOne("OpenQMS.Models.AppUser", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedBy");
+
+                    b.HasOne("OpenQMS.Models.AppUser", "EditedByUser")
+                        .WithMany()
+                        .HasForeignKey("EditedBy");
+
+                    b.HasOne("OpenQMS.Models.Process", "Process")
+                        .WithMany("Materials")
+                        .HasForeignKey("ProcessId");
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("EditedByUser");
+
+                    b.Navigation("Process");
+                });
+
             modelBuilder.Entity("OpenQMS.Models.Navigation.UserTraining", b =>
                 {
                     b.HasOne("OpenQMS.Models.AppUser", "Trainee")
@@ -416,9 +1092,94 @@ namespace OpenQMS.Migrations
                     b.Navigation("Training");
                 });
 
+            modelBuilder.Entity("OpenQMS.Models.Process", b =>
+                {
+                    b.HasOne("OpenQMS.Models.Product", "Product")
+                        .WithMany("Processes")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Product", b =>
+                {
+                    b.HasOne("OpenQMS.Models.AppUser", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedBy");
+
+                    b.HasOne("OpenQMS.Models.AppUser", "EditedByUser")
+                        .WithMany()
+                        .HasForeignKey("EditedBy");
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("EditedByUser");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Training", b =>
+                {
+                    b.HasOne("OpenQMS.Models.AppUser", "CompletedByUser")
+                        .WithMany()
+                        .HasForeignKey("CompletedBy");
+
+                    b.Navigation("CompletedByUser");
+                });
+
             modelBuilder.Entity("OpenQMS.Models.AppUser", b =>
                 {
                     b.Navigation("Trainings");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Asset", b =>
+                {
+                    b.Navigation("Capas");
+
+                    b.Navigation("Changes");
+
+                    b.Navigation("Deviations");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Capa", b =>
+                {
+                    b.Navigation("Changes");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Deviation", b =>
+                {
+                    b.Navigation("Capas");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Material", b =>
+                {
+                    b.Navigation("Capas");
+
+                    b.Navigation("Changes");
+
+                    b.Navigation("Deviations");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Process", b =>
+                {
+                    b.Navigation("Assets");
+
+                    b.Navigation("Capas");
+
+                    b.Navigation("Changes");
+
+                    b.Navigation("Deviations");
+
+                    b.Navigation("Materials");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.Product", b =>
+                {
+                    b.Navigation("Capa");
+
+                    b.Navigation("Changes");
+
+                    b.Navigation("Deviation");
+
+                    b.Navigation("Processes");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Training", b =>

@@ -1,0 +1,140 @@
+﻿@model IEnumerable<OpenQMS.Models.Product>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts
+    {
+    <script>
+        $(document).ready(function () {
+
+            var table = $('#example7').DataTable({
+                "columns": [
+                    null,
+                    null,
+                    null,
+                    { "visible": false },
+                    { "visible": false },
+                    { "visible": false },
+                    { "visible": false },
+                    null,
+                    null
+                ],
+                paging: true,
+                orderCellsTop: true,
+                dom: 'lBfrtip',
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "order": [[0, 'asc']],
+                displayLength: 10,
+                buttons: [
+                    'colvis',
+                    {
+                        extend: 'pdf',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                        }
+                    }
+                ],
+            });
+        });
+    </script>
+    }
+
+<h1>Index</h1>
+
+<h4>Products</h4>
+<hr />
+
+<table id="example7" class="table" style="width: 100%;">
+    <thead>
+        <tr>
+            <th>
+                Product Id
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Version)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EditedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EditedOn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ApprovedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ApprovedOn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProductId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Version)
+                </td>
+                <td>
+                    @(item.EditedByUser == null ? "" : item.EditedByUser.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EditedOn)
+                </td>
+                <td>
+                    @(item.ApprovedByUser == null ? "" : item.ApprovedByUser.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ApprovedOn)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @if (item.IsLocked != true)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <text>|</text>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (item.Status != Product.ProductStatus.Approved && item.Status != Product.ProductStatus.Obsolete)
+                    {
+                        <text>|</text>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+@* <p>
+    <a class="btn btn-success" asp-action="ExportProducts">Export</a>
+</p> *@

@@ -362,11 +362,13 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-Release.txt
-/Releases.txt
-
-DocumentsApiController.cs
+/Files
 db-deployment.yaml
 db-service.yaml
 openqms-deployment.yaml
 openqms-service.yaml
+/docker-compose.override.yml
+/docker-compose.yml
+/Dockerfile
+/.dockerignore
+/docker-compose.dcproj

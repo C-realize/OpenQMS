@@ -1,0 +1,144 @@
+﻿@model OpenQMS.Models.Product
+
+@{
+    ViewData["Title"] = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Delete</h1>
+
+<h4>Product</h4>
+<hr />
+<h5 style="color:red;">Are you sure you want to delete this?</h5>
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">
+            Id
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ProductId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Version)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Version)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.EditedBy)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EditedByUser.UserName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.EditedOn)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.EditedOn)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ApprovedBy)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ApprovedByUser.UserName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ApprovedOn)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ApprovedOn)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+    </dl>
+
+    <h2>Changes List</h2>
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Changes)
+                {
+                    <tr>
+                        <td><a href="/Changes/Details/@item.Id">@item.ChangeId</a></td>
+                        <td>@item.Title</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br />
+
+    <h2>Deviations List</h2>
+    <div class=" row">
+        <table class=" table table-border">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Deviation)
+                {
+                    <tr>
+                        <td><a href="/Deviation/Details/@item.Id">@item.DeviationId</a></td>
+                        <td>@item.Title</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <br />
+    <h2>CAPA List</h2>
+    <div class="row">
+        <table class="table table-border">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Capa)
+                {
+                    <tr>
+                        <td>
+                            <a href="/Capas/Details/@item.Id">@item.CapaId</a>
+                        </td>
+                        <td>@item.Title</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <br />
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
+</div>

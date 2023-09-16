@@ -2,22 +2,81 @@
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 
-<ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserAsync(User).Result.FirstName!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">OPENQMS.NET</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item dropdown">
+                            <a class="quality nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Quality <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Changes" asp-action="Index">Changes</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Deviations" asp-action="Index">Deviations</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Capas" asp-action="Index">CAPA</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Processes" asp-action="Index">Processes</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="plant nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Plant <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Assets" asp-action="Index">Assets</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Materials" asp-action="Index">Materials</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="AppDocuments" asp-action="Index">Policies</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="people nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">People <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="AppUsers" asp-action="Index">Users</a>
+                                    </li>
+                                }
+                                @if (User.IsInRole(Constants.AdministratorsRole))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="AppRoles" asp-action="Index">Roles</a>
+                                    </li>
+                                }
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Trainings" asp-action="Index">Trainings</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserAsync(User).Result.FirstName!</a>
+                        </li>
+                        <li class="nav-item">
+                            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
 }
-else
+@*else
 {
+    <ul class="navbar-nav">
     <li class="nav-item">
         <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
-</ul>
+        </li>
+    </ul>
+}*@

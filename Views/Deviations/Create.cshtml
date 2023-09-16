@@ -1,0 +1,74 @@
+﻿@model OpenQMS.Models.Deviation
+
+@{
+    ViewData["Title"] = "Create";
+    var products = (List<Product>)ViewData["Products"];
+    var process = (List<Process>)ViewData["Processes"];
+    var assets = (List<Asset>)ViewData["Assets"];
+    var materials = (List<Material>)ViewData["Materials"];
+    var deviations = (List<Deviation>)ViewData["Deviations"];
+}
+
+<h1>Create</h1>
+
+<h4>Deviation</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="DeviationId" value="X" />
+            <input type="hidden" asp-for="IdentifiedBy" value="X" />
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Product</label>
+                <select asp-for="ProductId" class="form-control" asp-items='new SelectList(products,"Id","Name")'>
+                    <option value="">--Select Product--</option>
+                </select>
+                <span asp-validation-for="ProductId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Process</label>
+                <select asp-for="ProcessId" class="form-control" asp-items='new SelectList(process,"Id","Name")'>
+                    <option value="">--Select Process-</option>
+                </select>
+                <span asp-validation-for="ProcessId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Asset</label>
+                <select asp-for="AssetId" class="form-control" asp-items='new SelectList(assets,"Id","Name")'>
+                    <option value="">--Select Asset--</option>
+                </select>
+                <span asp-validation-for="AssetId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Material</label>
+                <select asp-for="MaterialId" class="form-control" asp-items='new SelectList(materials,"Id","Name")'>
+                    <option value="">--Select Material--</option>
+                </select>
+                <span asp-validation-for="MaterialId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Identification" class="control-label"></label>
+                <textarea asp-for="Identification" class="form-control"></textarea>
+                <span asp-validation-for="Identification" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

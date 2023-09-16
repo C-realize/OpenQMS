@@ -1,14 +1,9 @@
 ﻿#nullable disable
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using OpenQMS.Authorization;
 using OpenQMS.Data;
@@ -32,36 +27,11 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Trainings
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index()
         {
-            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
-
-            ViewData["CurrentFilter"] = searchString;
-
             var trainings = _context.Training
                 .Include(t => t.Trainees)
-                .AsNoTracking();
-
-            if (!String.IsNullOrEmpty(searchString))
-            {
-                trainings = trainings.Where(t => t.Name.Contains(searchString));
-            }
-            switch (sortOrder)
-            {
-                case "name_desc":
-                    trainings = trainings.OrderByDescending(t => t.Name);
-                    break;
-                case "Date":
-                    trainings = trainings.OrderBy(t => t.Date);
-                    break;
-                case "date_desc":
-                    trainings = trainings.OrderByDescending(t => t.Date);
-                    break;
-                default:
-                    trainings = trainings.OrderBy(t => t.Name);
-                    break;
-            }
+                .ToList();
 
             // Only assigned trainings are shown UNLESS you're an administrator or manager.
             var isAuthorized = User.IsInRole(Constants.ManagersRole) ||
@@ -69,13 +39,15 @@ namespace OpenQMS.Controllers
             if (!isAuthorized)
             {
                 var currentUser = await _userManager.GetUserAsync(User);
-                var userTrainings = _context.UserTraining.Where(x => x.TraineeId == currentUser.Id);
+                var userTrainings = _context.UserTraining.Where(x => x.TraineeId == currentUser.Id).ToList();
                 var assignedTrainings = new List<Training>();
+
                 foreach (var training in userTrainings)
                 {
                     Training assignedTraining = await _context.Training.FirstOrDefaultAsync(m => m.Id == training.TrainingId);
                     assignedTrainings.Add(assignedTraining);
                 }
+
                 return View(assignedTrainings);
             }
             else
@@ -85,7 +57,7 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Trainings/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, bool isUserVerified = true)
         {
             if (id == null)
             {
@@ -93,13 +65,19 @@ namespace OpenQMS.Controllers
             }
 
             var training = await _context.Training
-                .Include(s=>s.Trainees).ThenInclude(t => t.Trainee)
+                .Include(x => x.CompletedByUser)
+                .Include(s => s.Trainees).ThenInclude(t => t.Trainee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (training == null)
             {
                 return NotFound();
+            }
+
+            if (!isUserVerified)
+            {
+                ModelState.AddModelError("", "Username or password is incorrect");
             }
 
             return View(training);
@@ -124,13 +102,25 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Date,PolicyId,PolicyTitle,TrainerId,TrainerEmail,Trainees")] Training training, string roles)
+        public async Task<IActionResult> Create([Bind("Id,TrainingId,Name,Description,Date,PolicyId,PolicyTitle,TrainerId,TrainerEmail,Trainees")] Training training, string roles)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
+                    var lastTraining = _context.Training.OrderByDescending(x => x.Id).FirstOrDefault();
+                    var prevId = 0;
+
+                    if (lastTraining != null && !string.IsNullOrEmpty(lastTraining.TrainingId))
+                    {
+                        string[] prevTrainingId = lastTraining.TrainingId.Split('-');
+                        prevId = int.Parse(prevTrainingId[1]);
+                    }
+
+                    prevId = prevId > 0 ? prevId + 1 : 1;
+                    training.TrainingId = $"TRN-{prevId.ToString().PadLeft(2, '0')}";
                     var policy = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == training.PolicyId);
+                    training.Status = Training.TrainingStatus.Scheduled;
                     var trainer = await _userManager.FindByIdAsync(training.TrainerId);
                     training.PolicyTitle = policy.Title;
                     training.TrainerEmail = trainer.Email;
@@ -169,13 +159,18 @@ namespace OpenQMS.Controllers
             }
 
             var training = await _context.Training
-                .Include(t => t.Trainees).ThenInclude(t=>t.Trainee)
+                .Include(t => t.Trainees).ThenInclude(t => t.Trainee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (training == null)
             {
                 return NotFound();
+            }
+
+            if (training.Status == Training.TrainingStatus.Completed)
+            {
+                return Forbid();
             }
 
             ViewData["Policies"] = _context.AppDocument.ToList();
@@ -223,27 +218,32 @@ namespace OpenQMS.Controllers
                 "",
                 t => t.Name, t => t.Description, t => t.Date, t => t.PolicyId, t => t.PolicyTitle, t => t.TrainerId, t => t.TrainerEmail))
             {
-                UpdateAssignedTrainees(selectedTrainees, trainingToUpdate);
-                try
+                if (trainingToUpdate.Status != Training.TrainingStatus.Completed) 
                 {
-                    var policy = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == trainingToUpdate.PolicyId);
-                    var trainer = await _userManager.FindByIdAsync(trainingToUpdate.TrainerId);
-                    trainingToUpdate.PolicyTitle = policy.Title;
-                    trainingToUpdate.TrainerEmail = trainer.Email;
-                    await _context.SaveChangesAsync();
+                    UpdateAssignedTrainees(selectedTrainees, trainingToUpdate);
+                    try
+                    {
+                        var policy = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == trainingToUpdate.PolicyId);
+                        var trainer = await _userManager.FindByIdAsync(trainingToUpdate.TrainerId);
+                        trainingToUpdate.PolicyTitle = policy.Title;
+                        trainingToUpdate.TrainerEmail = trainer.Email;
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateException /* ex */)
+                    {
+                        //Log the error (uncomment ex variable name and write a log.)
+                        ModelState.AddModelError("", "Unable to save changes. " +
+                            "Try again, and if the problem persists, " +
+                            "see your system administrator.");
+                    }
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateException /* ex */)
+                else
                 {
-                    //Log the error (uncomment ex variable name and write a log.)
-                    ModelState.AddModelError("", "Unable to save changes. " +
-                        "Try again, and if the problem persists, " +
-                        "see your system administrator.");
+                    return Forbid();
                 }
-                return RedirectToAction(nameof(Index));
             }
 
-            UpdateAssignedTrainees(selectedTrainees, trainingToUpdate);
-            PopulateAssignedTrainees(trainingToUpdate);
             return View(trainingToUpdate);
         }
 
@@ -295,6 +295,11 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
+            if (training.Status == Training.TrainingStatus.Completed)
+            {
+                return Forbid();
+            }
+
             return View(training);
         }
 
@@ -305,9 +310,94 @@ namespace OpenQMS.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var training = await _context.Training.FindAsync(id);
-            _context.Training.Remove(training);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            if (training.Status != Training.TrainingStatus.Completed)
+            {
+                _context.Training.Remove(training);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        public async Task<IActionResult> Complete(int id, string email, string pwd)
+        {
+            bool isUserVerified;
+            AppUser user = new AppUser();
+            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            if (user != null)
+            {
+                if (string.IsNullOrEmpty(pwd))
+                {
+                    isUserVerified = false;
+                }
+                else
+                {
+                    PasswordVerificationResult result =
+                        _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, pwd);
+                    if (result == PasswordVerificationResult.Success)
+                    {
+                        var training = _context.Training.FirstOrDefault(x => x.Id == id);
+
+                        var isAuthorized = User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole);
+                        if (!isAuthorized)
+                        {
+                            return Forbid();
+                        }
+
+                        training.Status = Training.TrainingStatus.Completed;
+                        training.CompletedBy = Convert.ToInt32(_userManager.GetUserId(User));
+                        training.CompletedOn = DateTime.Now;
+                        _context.Entry(training).State = EntityState.Modified;
+                        _context.SaveChanges();
+                        isUserVerified = true;
+                    }
+                    else
+                    {
+                        isUserVerified = false;
+                    }
+                }
+            }
+            else
+            {
+                isUserVerified = false;
+            }
+            if (isUserVerified)
+            {
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return Redirect("/Trainings/Details?id=" + id.ToString() + "&isUserVerified=" + isUserVerified.ToString());
+            }
+        }
+
+        public ActionResult GetDocuments()
+        {
+            var trainings = _context.Training.ToList();
+            var dataSets = new List<PoliciesChartViewModel>();
+            var statusList = Enum.GetValues(typeof(Training.TrainingStatus)).Cast<Training.TrainingStatus>();
+            var labels = new List<string>();
+            var random = new Random();
+            var dataSet = new PoliciesChartViewModel();
+
+            if (trainings != null && trainings.Count > 0)
+            {
+                foreach (var label in statusList)
+                {
+                    labels.Add(label.ToString());
+                    var statusCount = trainings.Where(x => x.Status.Equals(label)).Count();
+                    dataSet.Data.Add(statusCount);
+                    dataSet.BackgroundColor.Add(String.Format("#{0:X6}", random.Next(0x1000000)));
+                }
+            }
+
+            dataSets.Add(dataSet);
+
+            return Json(new { dataSet = dataSets, labels });
         }
 
         private bool TrainingExists(int id)

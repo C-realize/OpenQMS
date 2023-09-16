@@ -44,6 +44,7 @@ namespace OpenQMS.Data
                     Email = Email,
                     EmailConfirmed = true
                 };
+
                 await userManager.CreateAsync(user, testUserPw);
             }
 

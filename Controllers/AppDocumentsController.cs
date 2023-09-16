@@ -1,22 +1,21 @@
-﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using OpenQMS.Authorization;
 using OpenQMS.Data;
 using OpenQMS.Models;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Word = Microsoft.Office.Interop.Word;
+using OpenQMS.Models.ViewModels;
+using OpenQMS.Services;
+
+//**DocumentFormat.OpenXml nuget package**
+//using DocumentFormat.OpenXml.Packaging;
+//using DocumentFormat.OpenXml.Wordprocessing;
+
+//**Microsoft Word 16.0 Object Library COM reference**
+//using Word = Microsoft.Office.Interop.Word;
 
 namespace OpenQMS.Controllers
 {
@@ -38,56 +37,14 @@ namespace OpenQMS.Controllers
         // GET: Documents
         public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? pageNumber)
         {
-            ViewData["CurrentSort"] = sortOrder;
-            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
-            ViewData["ApproveDateSortParm"] = sortOrder == "ApproveDate" ? "approvedate_desc" : "ApproveDate";
-
-            if (searchString != null)
-            {
-                pageNumber = 1;
-            }
-            else
-            {
-                searchString = currentFilter;
-            }
-
-            ViewData["CurrentFilter"] = searchString;
-
             var documents = from d in _context.AppDocument
                             select d;
-            if (!String.IsNullOrEmpty(searchString))
-            {
-                documents = documents.Where(d => d.Title.Contains(searchString));
-            }
 
-            switch (sortOrder)
-            {
-                case "name_desc":
-                    documents = documents.OrderByDescending(d => d.Title);
-                    break;
-                case "Date":
-                    documents = documents.OrderBy(d => d.AuthoredOn);
-                    break;
-                case "date_desc":
-                    documents = documents.OrderByDescending(d => d.AuthoredOn);
-                    break;
-                case "ApproveDate":
-                    documents = documents.OrderBy(d => d.ApprovedOn);
-                    break;
-                case "approvedate_desc":
-                    documents = documents.OrderByDescending(d => d.ApprovedOn);
-                    break;
-                default:
-                    documents = documents.OrderBy(d => d.Title);
-                    break;
-            }
-
-            var currentUserName = _userManager.GetUserName(User);
             var isAuthorized = User.IsInRole(Constants.ManagersRole) 
                             || User.IsInRole(Constants.AdministratorsRole);
             if (!isAuthorized)
             {
+                var currentUserName = _userManager.GetUserName(User);
                 documents = documents.Where(d => d.Status == AppDocument.DocumentStatus.Approved
                                               || d.AuthoredBy == currentUserName);
             }
@@ -131,7 +88,15 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            return File(document.Content, document.FileType, document.Title + document.FileExtension);
+            //Dowload from filesystem
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(document.FilePath, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+
+            return File(/*document.Content,*/ memory, document.FileType, document.Title + document.FileExtension);
         }
 
         // POST: Documents/Details/5
@@ -139,7 +104,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Details(int id, AppDocument.DocumentStatus status, string InputEmail, String InputPassword)
+        public async Task<IActionResult> Details(int id, AppDocument.DocumentStatus status, string InputEmail, string InputPassword)
         {
             var document = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == id);
             var documentPdf = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == id);
@@ -176,25 +141,40 @@ namespace OpenQMS.Controllers
                 documentPdf.ApprovedOn = DateTime.Now;
                 documentPdf.Status = AppDocument.DocumentStatus.Approved;
 
-                string strDoc = @"C:\Users\Hao\Downloads\repos\temp\" + document.Title;
-                MemoryStream stream = new MemoryStream();
-                stream.Write(document.Content, 0, document.Content.Length);
-                string txt = "Approved in OpenQMS.net by " + documentPdf.ApprovedBy + " on " + documentPdf.ApprovedOn;
-                OpenAndAddToWordprocessingStream(stream, txt, strDoc);
-                stream.Close();
-                string input = strDoc + ".docx";
-                string output = strDoc + ".pdf";
-                WaitForFile(input);
+                if (documentPdf.FileExtension.Equals(".pdf") && !string.IsNullOrEmpty(documentPdf.FilePath))
+                {
+                    documentPdf.FilePath = Helper.SignPDF(documentPdf.FilePath);
+                }
 
-                ConvertWordToSpecifiedFormat(input, output, Word.WdSaveFormat.wdFormatPDF);
-                WaitForFile(output);
+                if (documentPdf.GeneratedFrom != null && !string.IsNullOrEmpty(documentPdf.GeneratedFrom))
+                {
+                    var oldDocument = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id.ToString().Equals(documentPdf.GeneratedFrom));
 
-                OpenAndSaveToWordprocessingStream(output, documentPdf);
-                stream.Close();
-                WaitForFile(input);
+                    oldDocument.Status = AppDocument.DocumentStatus.Obsolete;
+                    _context.AppDocument.Update(oldDocument);
+                }
 
-                System.IO.File.Delete(input);
-                System.IO.File.Delete(output);
+                //**Conversion of a Word document to PDF with the addition of a footer.**
+
+                //string strDoc = @"C:\Users\Hao\Downloads\repos\temp\" + document.Title;
+                //MemoryStream stream = new MemoryStream();
+                //stream.Write(document.Content, 0, document.Content.Length);
+                //string txt = "Approved in OpenQMS.net by " + documentPdf.ApprovedBy + " on " + documentPdf.ApprovedOn;
+                //OpenAndAddToWordprocessingStream(stream, txt, strDoc);
+                //stream.Close();
+                //string input = strDoc + ".docx";
+                //string output = strDoc + ".pdf";
+                //WaitForFile(input);
+
+                //ConvertWordToSpecifiedFormat(input, output, Word.WdSaveFormat.wdFormatPDF);
+                //WaitForFile(output);
+
+                //OpenAndSaveToWordprocessingStream(output, documentPdf);
+                //stream.Close();
+                //WaitForFile(input);
+
+                //System.IO.File.Delete(input);
+                //System.IO.File.Delete(output);
 
                 _context.AppDocument.Update(documentPdf);
             }
@@ -208,85 +188,85 @@ namespace OpenQMS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private static void OpenAndAddToWordprocessingStream(Stream stream, string txt, string strDoc)
-        {
-            // Open a WordProcessingDocument based on a stream.
-            WordprocessingDocument wordprocessingDocument = WordprocessingDocument.Open(stream, true);
-            // Assign a reference to the existing document body.
-            MainDocumentPart mainDocumentPart = wordprocessingDocument.MainDocumentPart;
-            FooterPart footerPart = mainDocumentPart.FooterParts.Last();
-            // Add new text.
-            Paragraph paragraph1 = new Paragraph() { };
-            Run run1 = new Run();
-            Text text1 = new Text();
-            text1.Text = txt;
+        //private static void OpenAndAddToWordprocessingStream(Stream stream, string txt, string strDoc)
+        //{
+        //    // Open a WordProcessingDocument based on a stream.
+        //    WordprocessingDocument wordprocessingDocument = WordprocessingDocument.Open(stream, true);
+        //    // Assign a reference to the existing document body.
+        //    MainDocumentPart mainDocumentPart = wordprocessingDocument.MainDocumentPart;
+        //    FooterPart footerPart = mainDocumentPart.FooterParts.Last();
+        //    // Add new text.
+        //    Paragraph paragraph1 = new Paragraph() { };
+        //    Run run1 = new Run();
+        //    Text text1 = new Text();
+        //    text1.Text = txt;
 
-            run1.Append(text1);
-            paragraph1.Append(run1);
-            footerPart.Footer.Append(paragraph1);
+        //    run1.Append(text1);
+        //    paragraph1.Append(run1);
+        //    footerPart.Footer.Append(paragraph1);
 
-            wordprocessingDocument.SaveAs(strDoc + ".docx").Dispose();
+        //    wordprocessingDocument.SaveAs(strDoc + ".docx").Dispose();
 
-            // Close the document handle.
-            wordprocessingDocument.Close();
+        //    // Close the document handle.
+        //    wordprocessingDocument.Close();
 
-            // Caller must close the stream.
-        }
+        //    // Caller must close the stream.
+        //}
 
-        private static void ConvertWordToSpecifiedFormat(object input, object output, object format)
-        {
-            Word._Application application = new Word.Application();
-            application.Visible = false;
-            object missing = Missing.Value;
-            object isVisible = false;
-            object readOnly = false;
-            Word._Document document = application.Documents.Open(ref input, ref missing, ref readOnly, ref missing, ref missing, ref missing, ref missing,
-                                    ref missing, ref missing, ref missing, ref missing, ref isVisible, ref missing, ref missing, ref missing, ref missing);
-            document.Activate();
-            document.SaveAs(ref output, ref format, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing,
-                            ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing);
-            document.Save();
-            application.Quit(ref missing, ref missing, ref missing);
-        }
+        //private static void ConvertWordToSpecifiedFormat(object input, object output, object format)
+        //{
+        //    Word._Application application = new Word.Application();
+        //    application.Visible = false;
+        //    object missing = Missing.Value;
+        //    object isVisible = false;
+        //    object readOnly = false;
+        //    Word._Document document = application.Documents.Open(ref input, ref missing, ref readOnly, ref missing, ref missing, ref missing, ref missing,
+        //                            ref missing, ref missing, ref missing, ref missing, ref isVisible, ref missing, ref missing, ref missing, ref missing);
+        //    document.Activate();
+        //    document.SaveAs(ref output, ref format, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing,
+        //                    ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing);
+        //    document.Save();
+        //    application.Quit(ref missing, ref missing, ref missing);
+        //}
 
-        private static async void WaitForFile(string doc)
-        {
-            //This will lock the execution until the file is ready
-            //TODO: Add some logic to make it async and cancelable
-            while (!IsFileReady(doc)) 
-            {
-                Thread.Sleep(1000);
-            }
-        }
+        //private static async void WaitForFile(string doc)
+        //{
+        //    //This will lock the execution until the file is ready
+        //    //TODO: Add some logic to make it async and cancelable
+        //    while (!IsFileReady(doc)) 
+        //    {
+        //        Thread.Sleep(1000);
+        //    }
+        //}
 
-        private static bool IsFileReady(string doc)
-        {
-            // If the file can be opened for exclusive access it means that the file
-            // is no longer locked by another process.
-            try
-            {
-                using (FileStream file = new FileStream(doc, FileMode.Open, FileAccess.Read))
-                    return file.Length > 0;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+        //private static bool IsFileReady(string doc)
+        //{
+        //    // If the file can be opened for exclusive access it means that the file
+        //    // is no longer locked by another process.
+        //    try
+        //    {
+        //        using (FileStream file = new FileStream(doc, FileMode.Open, FileAccess.Read))
+        //            return file.Length > 0;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return false;
+        //    }
+        //}
 
-        private static void OpenAndSaveToWordprocessingStream(string output, AppDocument documentPdf)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            using (FileStream file = new FileStream(output, FileMode.Open, FileAccess.Read))
-            {
-                byte[] bytes = new byte[file.Length];
-                file.Read(bytes, 0, (int)file.Length);
-                ms.Write(bytes, 0, (int)file.Length);
-                documentPdf.Content = ms.ToArray();
-                documentPdf.FileType = "application/pdf";
-                documentPdf.FileExtension = ".pdf";
-            }
-        }
+        //private static void OpenAndSaveToWordprocessingStream(string output, AppDocument documentPdf)
+        //{
+        //    using (MemoryStream ms = new MemoryStream())
+        //    using (FileStream file = new FileStream(output, FileMode.Open, FileAccess.Read))
+        //    {
+        //        byte[] bytes = new byte[file.Length];
+        //        file.Read(bytes, 0, (int)file.Length);
+        //        ms.Write(bytes, 0, (int)file.Length);
+        //        documentPdf.Content = ms.ToArray();
+        //        documentPdf.FileType = "application/pdf";
+        //        documentPdf.FileExtension = ".pdf";
+        //    }
+        //}
 
         // GET: Documents/Create
         public IActionResult Create()
@@ -299,23 +279,60 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,Version,Content,FileType,FileExtension,Status,AuthoredBy,AuthoredOn,ApprovedBy,ApprovedOn")] AppDocument document, IFormFile file)
+        public async Task<IActionResult> Create([Bind("Title,DocumentId,Description,Version,Content,FileType,FileExtension,Status,AuthoredBy,AuthoredOn,ApprovedBy,ApprovedOn")] AppDocument document, IFormFile file)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    document.Version = 0.01;
+                    var lastdoc = _context.AppDocument.OrderByDescending(x => x.DocumentId).FirstOrDefault();
+                    var prevId = 0;
+
+                    if (lastdoc != null && !string.IsNullOrEmpty(lastdoc.DocumentId))
+                    {
+                        string[] prevDocId = lastdoc.DocumentId.Split('-');
+                        prevId = int.Parse(prevDocId[1]);
+                    }
+
+                    prevId = prevId > 0 ? prevId + 1 : 1;
+                    document.DocumentId = $"Doc-{prevId.ToString().PadLeft(2, '0')}";
+                    document.Version = Convert.ToDecimal(0.01);
                     document.IsLocked = false;
                     document.AuthoredBy = _userManager.GetUserName(User);
                     document.AuthoredOn = DateTime.Now;
                     document.FileType = file.ContentType;
                     document.FileExtension = Path.GetExtension(file.FileName);
-                    using (var memoryStream = new MemoryStream())
+
+                    //**Upload file to filesystem**
+                    var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                    bool basePathExists = System.IO.Directory.Exists(basePath);
+                    if (!basePathExists) Directory.CreateDirectory(basePath);
+                    var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                    var filePath = Path.Combine(basePath, file.FileName);
+                    if (!System.IO.File.Exists(filePath))
                     {
-                        await file.CopyToAsync(memoryStream);
-                        document.Content = memoryStream.ToArray();
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        document.FilePath = filePath;
                     }
+
+                    //**Upload file to database**
+                    //using (var memoryStream = new MemoryStream())
+                    //{
+                    //    await file.CopyToAsync(memoryStream);
+
+                    //    Upload the file if less than 2 MB (recommendation)
+                    //    if (memoryStream.Length < 2097152)
+                    //    {
+                    //        document.Content = memoryStream.ToArray();
+                    //    }
+                    //    else
+                    //    {
+                    //        ModelState.AddModelError("File", "The file is too large.");
+                    //    }
+                    //}
 
                     var isAuthorized = await _authorizationService.AuthorizeAsync(User, document, DocumentOperations.Create);
                     if (!isAuthorized.Succeeded)
@@ -365,7 +382,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Version,Content,FileType,FileExtension,Status,AuthoredBy,AuthoredOn,ApprovedBy,ApprovedOn,IsLocked")] AppDocument document, IFormFile file)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,DocumentId,Title,Description,Version,Content,FileType,FileExtension,AuthoredBy,AuthoredOn,ApprovedBy,ApprovedOn,GeneratedFrom,IsLocked,Status")] AppDocument document, IFormFile file)
         {
             if (id != document.Id)
             {
@@ -376,25 +393,47 @@ namespace OpenQMS.Controllers
             {
                 try
                 {
+                    if (document.IsLocked)
+                    {
+                        return Forbid();
+                    }
+
                     document.AuthoredBy = _userManager.GetUserName(User);
                     document.AuthoredOn = DateTime.Now;
-                    document.Version += 0.01;
+                    document.Version += Convert.ToDecimal(0.01);
                     document.FileType = file.ContentType;
                     document.FileExtension = Path.GetExtension(file.FileName);
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await file.CopyToAsync(memoryStream);
 
-                        // Upload the file if less than 2 MB
-                        //if (memoryStream.Length < 2097152)
-                        //{
-                            document.Content = memoryStream.ToArray();
-                        //}
-                        //else
-                        //{
-                        //    ModelState.AddModelError("File", "The file is too large.");
-                        //}
+                    //**Upload file to filesystem**
+                    var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                    bool basePathExists = System.IO.Directory.Exists(basePath);
+                    if (!basePathExists) Directory.CreateDirectory(basePath);
+                    var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                    var filePath = Path.Combine(basePath, file.FileName);
+                    if (!System.IO.File.Exists(filePath))
+                    {
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        document.FilePath = filePath;
                     }
+
+                    //**Upload file to database * *
+                    //using (var memoryStream = new MemoryStream())
+                    //{
+                    //    await file.CopyToAsync(memoryStream);
+
+                    //    Upload the file if less than 2 MB(recommendation)
+                    //    if (memoryStream.Length < 2097152)
+                    //    {
+                    //        document.Content = memoryStream.ToArray();
+                    //    }
+                    //    else
+                    //    {
+                    //        ModelState.AddModelError("File", "The file is too large.");
+                    //    }
+                    //}
 
                     var isAuthorized = await _authorizationService.AuthorizeAsync(User, document, DocumentOperations.Update);
                     if (!isAuthorized.Succeeded)
@@ -404,25 +443,22 @@ namespace OpenQMS.Controllers
 
                     if (document.Status == AppDocument.DocumentStatus.Approved)
                     {
-                        if (document.IsLocked)
+                        using (var transaction = _context.Database.BeginTransaction())
                         {
-                            return Forbid();
-                        }
-                            using (var transaction = _context.Database.BeginTransaction())
-                            {
-                                _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument ON;");
-                                document.Id = _context.AppDocument.Max(m => m.Id) + 1;
-                                document.Status = AppDocument.DocumentStatus.Draft;
-                                document.IsLocked = false;
-                                _context.Add(document);
-                                _context.SaveChanges();
-                                _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument OFF;");
-                                transaction.Commit();
-                            }
-                            AppDocument document1 = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == id);
-                            document1.IsLocked = true;
-                            _context.Update(document1);
+                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument ON;");
+                            document.Id = _context.AppDocument.Max(m => m.Id) + 1;
+                            document.Status = AppDocument.DocumentStatus.Draft;
+                            document.GeneratedFrom = id.ToString();
+                            document.IsLocked = false;
+                            _context.Add(document);
                             _context.SaveChanges();
+                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument OFF;");
+                            transaction.Commit();
+                        }
+                        AppDocument document1 = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == id);
+                        document1.IsLocked = true;
+                        _context.Update(document1);
+                        _context.SaveChanges();
                     }
                     else
                     {
@@ -471,7 +507,8 @@ namespace OpenQMS.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var document = await _context.AppDocument.FindAsync(id);
-            if (document.Status != AppDocument.DocumentStatus.Approved)
+
+            if (document.Status != AppDocument.DocumentStatus.Approved && document.Status != AppDocument.DocumentStatus.Obsolete)
             {
                 _context.AppDocument.Remove(document);
                 await _context.SaveChangesAsync();
@@ -481,6 +518,56 @@ namespace OpenQMS.Controllers
             {
                 return Forbid();
             }
+        }
+
+        public ActionResult GetDocuments()
+        {
+            var appDocuments = _context.AppDocument.ToList();
+            var dataSets = new List<PoliciesChartViewModel>();
+            var statusList = Enum.GetValues(typeof(AppDocument.DocumentStatus)).Cast<AppDocument.DocumentStatus>();
+            var labels = new List<string>();
+            var random = new Random();
+            var dataSet = new PoliciesChartViewModel();
+
+            if (appDocuments != null && appDocuments.Count > 0)
+            {
+                foreach (var label in statusList)
+                {
+                    labels.Add(label.ToString());
+                    var statusCount = appDocuments.Where(x => x.Status.Equals(label)).Count();
+                    dataSet.Data.Add(statusCount);
+                    dataSet.BackgroundColor.Add(String.Format("#{0:X6}", random.Next(0x1000000)));
+                }
+            }
+
+            dataSets.Add(dataSet);
+
+            return Json(new { dataSet = dataSets, labels });
+        }
+
+        public ActionResult GetDocumentsForBarchart()
+        {
+            var appDocuments = _context.AppDocument.ToList();
+            var dataSets = new List<PoliciesChartViewModel>();
+            var labels = new List<string>();
+            var random = new Random();
+            var dataSet = new PoliciesChartViewModel();
+            var dates = appDocuments.Select(x => x.AuthoredOn.Date).Distinct().ToList();
+
+            if (appDocuments != null && appDocuments.Count > 0)
+            {
+                foreach (var date in dates)
+                {
+                    labels.Add(date.ToShortDateString());
+                    var docCount = appDocuments.Where(x => x.AuthoredOn.Date == date).Count();
+                    dataSet.Data.Add(docCount);
+                    dataSet.BackgroundColor.Add(String.Format("#{0:X6}", random.Next(0x1000000)));
+                }
+            }
+
+            dataSets.Add(dataSet);
+
+            return Json(new { dataSet = dataSets, labels });
         }
 
         private bool DocumentExists(int id)

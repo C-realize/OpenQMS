@@ -1,0 +1,134 @@
+﻿@model IEnumerable<OpenQMS.Models.Capa>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+@section Scripts
+    {
+    <script>
+        $(document).ready(function () {
+
+            var table = $('#example7').DataTable({
+                "columns": [
+                    null,
+                    null,
+                    { "visible": false },
+                    { "visible": false },
+                    { "visible": false },
+                    { "visible": false },
+                    null,
+                    null
+                ],
+                paging: true,
+                orderCellsTop: true,
+                dom: 'lBfrtip',
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "order": [[0, 'asc']],
+                displayLength: 10,
+                buttons: [
+                    'colvis',
+                    {
+                        extend: 'pdf',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    }
+                ],
+            });
+        });
+    </script>
+    }
+
+<h1>Index</h1>
+
+<h4>CAPA</h4>
+<hr />
+
+<table id="example7" class="table" style="width: 100%;">
+    <thead>
+        <tr>
+            <th>
+                Capa Id
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Product)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Deviation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeterminedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DeterminedOn)
+            </th>
+            <th>
+                Status
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CapaId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @if (item.Product != null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Product.Name)
+                    }
+                </td>
+                <td>
+                    @if (item.Deviation != null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Deviation.Title)
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DeterminedBy)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DeterminedOn)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @if (item.Status != Capa.CapaStatus.Approved)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <text>|</text>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (item.Status != Capa.CapaStatus.Accepted && item.Status != Capa.CapaStatus.Approved && item.Status != Capa.CapaStatus.Implementation)
+                    {
+                        <text>|</text>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>

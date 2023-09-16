@@ -5,26 +5,64 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@section Scripts 
+{
+    <script>
+        $(document).ready(function () {
+
+            var table = $('#example7').DataTable({
+                "columns": [
+                    null,
+                    null,
+                    null,
+                    null,
+                    { "visible": false },
+                    { "visible": false },
+                    { "visible": false },
+                    { "visible": false },
+                    null
+                ],
+                paging: true,
+                orderCellsTop: true,
+                dom: 'lBfrtip',
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "order": [[0, 'asc']],
+                displayLength: 10,
+                buttons: [
+                    'colvis',
+                    {
+                        extend: 'pdf',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                        }
+                    }
+                ],
+            });
+        });
+    </script>
+}
+
 <h1>Index</h1>
 
 <h4>Documents</h4>
 <hr />
 
-<form asp-action="Index" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by Title: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-            <input type="submit" value="Search" class="btn btn-default" /> |
-            <a asp-action="Index">Back to Full List</a>
-        </p>
-    </div>
-</form>
-
-<table class="table">
+<table id="example7" class="table" style="width: 100%;">
     <thead>
         <tr>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Title</a>
+                Doc Id
+            </th>
+            <th>
+                Title
             </th>
             <th>
                 Version
@@ -36,21 +74,26 @@
                 Authored By
             </th>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Authored On</a>
+                Authored On
             </th>
             <th>
                 Approved By
             </th>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["ApproveDateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Approved On</a>
+                Approved On
             </th>
-            <th></th>
+            <th>
+                Action
+            </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model) 
+        @foreach (var item in Model)
         {
             <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DocumentId)
+                </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)
                 </td>
@@ -73,16 +116,16 @@
                     @Html.DisplayFor(modelItem => item.ApprovedOn)
                 </td>
                 <td>
-                    @if ((await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Update)).Succeeded)
+                    @if ((await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Update)).Succeeded && item.IsLocked != true)
                     {
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> 
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                         <text> | </text>
                     }
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    @if (item.Status!=AppDocument.DocumentStatus.Approved && (await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Delete)).Succeeded)
+                    @if (item.Status != AppDocument.DocumentStatus.Approved && item.Status != AppDocument.DocumentStatus.Obsolete && (await AuthorizationService.AuthorizeAsync(User, item, DocumentOperations.Delete)).Succeeded)
                     {
                         <text> | </text>
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>    
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                     }
                 </td>
             </tr>
@@ -93,26 +136,3 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-
-@{
-    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-}
-
-<a asp-action="Index"
-   asp-route-sortOrder="@ViewData["CurrentSort"]"
-   asp-route-pageNumber="@(Model.PageIndex - 1)"
-   asp-route-currentFilter="@ViewData["CurrentFilter"]"
-   class="btn btn-default @prevDisabled">
-    Previous
-</a>
-
-<a><---Page @Model.PageIndex of @Model.TotalPages---></></a>
-
-<a asp-action="Index"
-   asp-route-sortOrder="@ViewData["CurrentSort"]"
-   asp-route-pageNumber="@(Model.PageIndex + 1)"
-   asp-route-currentFilter="@ViewData["CurrentFilter"]"
-   class="btn btn-default @nextDisabled">
-    Next
-</a>

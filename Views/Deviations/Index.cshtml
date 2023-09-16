@@ -1,0 +1,124 @@
+﻿@model IEnumerable<OpenQMS.Models.Deviation>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+@section Scripts
+    {
+    <script>
+        $(document).ready(function () {
+            
+            var table = $('#example7').DataTable({
+                "columns": [
+                    null,
+                    null,
+                    { "visible": false },
+                    { "visible": false },
+                    { "visible": false },
+                    null,
+                    null
+                ],
+                paging: true,
+                orderCellsTop: true,
+                dom: 'lBfrtip',
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "order": [[0, 'asc']],
+                displayLength: 10,
+                buttons: [
+                    'colvis',
+                    {
+                        extend: 'pdf',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        footer: false,
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5]
+                        }
+                    }
+                ],
+            });
+        });
+    </script>
+    }
+
+<h1>Index</h1>
+
+<h4>Deviations</h4>
+<hr />
+
+<table id="example7" class="table" style="width: 100%;">
+    <thead>
+        <tr>
+            <th>
+                Deviation Id
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Product)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdentifiedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdentifiedOn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) 
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DeviationId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @if (item.Product != null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Product.Name)
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdentifiedBy)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdentifiedOn)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @if (item.Status != Deviation.DeviationStatus.Approved)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <text>|</text>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (item.Status != Deviation.DeviationStatus.Accepted && item.Status != Deviation.DeviationStatus.Approved && item.Status != Deviation.DeviationStatus.Resolution)
+                    {
+                        <text>|</text>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>

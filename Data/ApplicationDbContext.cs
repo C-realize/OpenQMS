@@ -21,6 +21,16 @@ namespace OpenQMS.Data
             modelBuilder.Entity<UserTraining>().ToTable("UserTraining");
 
             modelBuilder.Entity<UserTraining>().HasKey(t => new { t.TraineeId, t.TrainingId });
+
+            
         }
+
+        public DbSet<OpenQMS.Models.Change>? Change { get; set; }
+        public DbSet<OpenQMS.Models.Capa>? Capa { get; set; }
+        public DbSet<OpenQMS.Models.Deviation>? Deviation { get; set; }
+        public DbSet<OpenQMS.Models.Product> Product { get; set; }
+        public DbSet<OpenQMS.Models.Asset> Asset { get; set; }
+        public DbSet<OpenQMS.Models.Process> Process { get; set; }
+        public DbSet<OpenQMS.Models.Material> Material { get; set; }
     }
 }

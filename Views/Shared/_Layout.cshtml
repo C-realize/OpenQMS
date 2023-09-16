@@ -9,66 +9,34 @@
     <link rel="stylesheet" href="~/OpenQMS.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">OpenQMS.net</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">Processes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">Deviations</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UnderConstruction">CAPA</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Trainings" asp-action="Index">Trainings</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="AppDocuments" asp-action="Index">Policies</a>
-                        </li>
-                        @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="AppUsers" asp-action="Index">People</a>
-                            </li>
-                        }
-                        @if (User.IsInRole(Constants.AdministratorsRole))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="AppRoles" asp-action="Index">Roles</a>
-                            </li>
-                        }
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
+    <partial name="_LoginPartial" />
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
-
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2022 - <a href="https://www-c-realize.com">C-realize IT Services SRL</a> - <a asp-area="" asp-controller="Home" asp-action="Terms">Terms of Use</a>
+            &copy; 2022-2023 - <a href="https://www-c-realize.com">C-realize IT Services SRL</a> - <a asp-area="" asp-controller="Home" asp-action="Terms">Terms of Use</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <link href="~/lib/datatables/datatables/css/jquery.datatables.min.css" rel="stylesheet" />
+    <link href="~/lib/datatables/buttons/css/buttons.datatables.min.css" rel="stylesheet" />
+
+    <script src="~/lib/datatables/datatables/js/jquery.datatables.min.js"></script>
+    <script src="~/lib/datatables/buttons/js/datatables.buttons.min.js"></script>
+    <script src="~/lib/datatables/buttons/js/buttons.html5.min.js"></script>
+    <script src="~/lib/datatables/buttons/js/buttons.print.min.js"></script>
+    <script src="~/lib/datatables/buttons/js/buttons.colvis.min.js"></script>
+    <script src="~/lib/datatables/jszip/jszip.min.js"></script>
+    <script src="~/lib/datatables/pdfmake/pdfmake.min.js"></script>
+    <script src="~/lib/datatables/pdfmake/vfs_fonts.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
