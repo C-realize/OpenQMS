@@ -1,4 +1,26 @@
-﻿using System.Data;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
+using System.Data;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,8 +56,9 @@ namespace OpenQMS.Controllers
         // GET: Capas
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Capa.Include(c => c.Product);
-            return View(await applicationDbContext.ToListAsync());
+            return _context.Capa != null ?
+                View(await _context.Capa.ToListAsync()) :
+                Problem("Entity set 'ApplicationDbContext.Capa'  is null.");
         }
 
         // GET: Capas/Details/5
@@ -90,7 +113,7 @@ namespace OpenQMS.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var lastCapa = _context.Capa.OrderByDescending(x => x.Id).FirstOrDefault();
+                    var lastCapa = _context.Capa.OrderByDescending(x => x.CapaId).FirstOrDefault();
                     var prevId = 0;
 
                     if (lastCapa != null && !string.IsNullOrEmpty(lastCapa.CapaId))
@@ -110,12 +133,16 @@ namespace OpenQMS.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //Log the error (uncomment dex variable name and add a line here to write a log.
-                ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
+                ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists, see your system administrator.");
             }
 
+            ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(Product.ProductStatus.Approved)).ToList();
+            ViewData["Processes"] = _context.Process.Where(x => x.Status.Equals(Process.ProcessStatus.Approved)).ToList();
+            ViewData["Assets"] = _context.Asset.Where(x => x.Status.Equals(Asset.AssetStatus.Approved)).ToList();
+            ViewData["Materials"] = _context.Material.Where(x => x.Status.Equals(Material.MaterialStatus.Approved)).ToList();
+            ViewData["Deviations"] = _context.Deviation.Where(x => x.Status.Equals(Deviation.DeviationStatus.Approved)).ToList();
             return View(capa);
         }
 
@@ -131,6 +158,11 @@ namespace OpenQMS.Controllers
             if (capa == null)
             {
                 return NotFound();
+            }
+
+            if (capa.Status == CapaStatus.Approved)
+            {
+                return Forbid();
             }
 
             ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(Product.ProductStatus.Approved)).ToList();
@@ -158,22 +190,22 @@ namespace OpenQMS.Controllers
             {
                 try
                 {
-                    if (capa.Status == Capa.CapaStatus.Approved)
+                    if (capa.Status == CapaStatus.Approved)
                     {
                         return Forbid();
                     }
 
-                    if (capa.Status == Capa.CapaStatus.Determination || capa.Status == Capa.CapaStatus.Assessment)
+                    if (capa.Status == CapaStatus.Determination || capa.Status == CapaStatus.Assessment)
                     {
                         capa.AssessedBy = _userManager.GetUserName(User);
                         capa.AssessedOn = DateTime.Now;
-                        capa.Status = Capa.CapaStatus.Assessment;
+                        capa.Status = CapaStatus.Assessment;
                     }
-                    else if (capa.Status == Capa.CapaStatus.Accepted || capa.Status == Capa.CapaStatus.Implementation)
+                    else if (capa.Status == CapaStatus.Accepted || capa.Status == CapaStatus.Implementation)
                     {
                         capa.ImplementedBy = _userManager.GetUserName(User);
                         capa.ImplementedOn = DateTime.Now;
-                        capa.Status = Capa.CapaStatus.Implementation;
+                        capa.Status = CapaStatus.Implementation;
                     }
 
                     capa.ExportFilePath = string.Empty;
@@ -241,14 +273,14 @@ namespace OpenQMS.Controllers
                            .Include(d => d.Changes)
                            .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (capa.Status == CapaStatus.Accepted || capa.Status == CapaStatus.Approved || capa.Status == CapaStatus.Implementation)
-            {
-                return Forbid();
-            }
-
             if (capa != null)
             {
                 _context.Capa.Remove(capa);
+            }
+
+            if (capa.Status == CapaStatus.Accepted || capa.Status == CapaStatus.Approved || capa.Status == CapaStatus.Implementation)
+            {
+                return Forbid();
             }
 
             await _context.SaveChangesAsync();
@@ -257,9 +289,14 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> Accepted(int id, string email, string pwd)
         {
+            if (_context.Capa == null)
+            {
+                return NotFound();
+            }
+
             bool isUserVerified;
-            AppUser user = new AppUser();
-            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            AppUser user = new();
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
                 if (string.IsNullOrEmpty(pwd))
@@ -310,9 +347,14 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> Approved(int id, string email, string pwd)
         {
+            if (_context.Capa == null)
+            {
+                return NotFound();
+            }
+
             bool isUserVerified;
-            AppUser user = new AppUser();
-            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            AppUser user = new();
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
                 if (string.IsNullOrEmpty(pwd))
@@ -363,7 +405,11 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportCAPADetail(int id)
         {
-            string mimType = "";
+            if (_context.Capa == null)
+            {
+                return NotFound();
+            }
+
             string path = Directory.GetCurrentDirectory() + "\\Reports\\CapaDetailReport.rdlc";
             var capa = await _context.Capa
                 .Where(x => x.Id == id)
@@ -403,55 +449,66 @@ namespace OpenQMS.Controllers
                 parameters.Add(new ReportParameter("ImplementedOn", capa.ImplementedOn.HasValue ? capa.ImplementedOn.Value.ToShortDateString() : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedBy", capa.ApprovedBy != null ? capa.ApprovedBy : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedOn", capa.ApprovedOn != null ? capa.ApprovedOn.Value.ToShortDateString() : string.Empty));
-                
-                LocalReport localReport = new LocalReport();
+                LocalReport localReport = new();
                 localReport.ReportPath = path;
                 localReport.DataSources.Add(new ReportDataSource("Change", changeList));
                 localReport.SetParameters(parameters);
                 var result = localReport.Render("PDF");
 
+                //**Export details as signed pdf**
                 var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"CapaDetail-{capa.Id}.pdf");
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await stream.WriteAsync(result);
-                    }
-                }
-                
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
                 capa.ExportFilePath = filePath;
-
-                if (capa.Status == CapaStatus.Approved)
-                {
-                    capa.ExportFilePath = Helper.SignPDF(capa.ExportFilePath);
-                }
+                //if (capa.Status == CapaStatus.Approved)
+                //{
+                //    capa.ExportFilePath = Helper.SignPDF(capa.ExportFilePath);
+                //}
 
                 _context.Update(capa);
                 await _context.SaveChangesAsync();
-            }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(capa.ExportFilePath, FileMode.Open))
+                return File(result, "application/pdf", "CapaDetail.pdf");
+            }
+            else
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
 
-            return File(memory, "application/pdf", "CapaDetail.pdf");
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(capa.ExportFilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+
+            //return File(memory, "application/pdf", "CapaDetail.pdf");
         }
 
         public ActionResult ExportDetailInCSV(int id)
         {
+            if(_context.Capa == null)
+            {
+                return NotFound();
+            }
+
             Capa capa = _context.Capa.Where(x => x.Id == id).FirstOrDefault();
+            if(capa == null)
+            {
+                return NotFound();
+            }
 
             var builder = new StringBuilder();
             builder.AppendLine("CAPA Id,Title,Status,Product,Process,Asset,Material,Deviation,CorrectiveAction,PreventiveAction,Determined By,Determined On,Assessment,Assessed By,Assessed On,Accepted By,Accepted On,Implementation,Implemented By,Implemented On,Approved By,Approved On");
@@ -462,6 +519,11 @@ namespace OpenQMS.Controllers
 
         public ActionResult GetDocuments()
         {
+            if (_context.Capa == null)
+            {
+                return NotFound();
+            }
+
             var capas = _context.Capa.ToList();
             var dataSets = new List<PoliciesChartViewModel>();
             var statusList = Enum.GetValues(typeof(CapaStatus)).Cast<CapaStatus>();

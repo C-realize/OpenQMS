@@ -1,4 +1,25 @@
-﻿using System.Data;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +29,9 @@ using OpenQMS.Authorization;
 using OpenQMS.Data;
 using OpenQMS.Models;
 using OpenQMS.Models.ViewModels;
-using OpenQMS.Services;
+//using OpenQMS.Services;
 using static OpenQMS.Models.Process;
+using static OpenQMS.Models.Product;
 
 namespace OpenQMS.Controllers
 {
@@ -81,7 +103,7 @@ namespace OpenQMS.Controllers
 
                 var userSigning = await _userManager.FindByEmailAsync(InputEmail);
                 var loggedUser = _userManager.GetUserName(User);
-                if (userSigning.UserName != loggedUser)
+                if ((userSigning == null) || (userSigning.UserName != loggedUser))
                 {
                     return Forbid();
                 }
@@ -167,11 +189,12 @@ namespace OpenQMS.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
-            catch (DataException ex)
+            catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
             }
 
+            ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(ProductStatus.Approved)).ToList();
             return View(process);
         }
 
@@ -189,7 +212,12 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(Product.ProductStatus.Approved)).ToList();
+            if (process.IsLocked)
+            {
+                return Forbid();
+            }
+
+            ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(ProductStatus.Approved)).ToList();
             return View(process);
         }
 
@@ -236,7 +264,7 @@ namespace OpenQMS.Controllers
                             transaction.Commit();
                         }
 
-                        Process process1 = await _context.Process.FirstOrDefaultAsync(m => m.Id == id);
+                        Process? process1 = await _context.Process.FirstOrDefaultAsync(m => m.Id == id);
                         process1.IsLocked = true;
                         _context.Update(process1);
                         _context.SaveChanges();
@@ -259,8 +287,10 @@ namespace OpenQMS.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(process);
         }
 
@@ -375,7 +405,6 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportProcessDetail(int id)
         {
-            string mimType = "";
             string path = Directory.GetCurrentDirectory() + "\\Reports\\ProcessDetailReport.rdlc";
             var process = await _context.Process
                 .Where(x => x.Id == id)
@@ -411,7 +440,7 @@ namespace OpenQMS.Controllers
                 parameters.Add(new ReportParameter("CapaCount", capaList != null && capaList.Count > 0 ? "false" : "true"));
                 parameters.Add(new ReportParameter("Status", process.Status.ToString()));
                 parameters.Add(new ReportParameter("EditedBy", process.EditedBy != null ? process.EditedBy : string.Empty));
-                parameters.Add(new ReportParameter("EditedOn", process.EditedOn != null ? process.EditedOn.ToShortDateString() : string.Empty));
+                parameters.Add(new ReportParameter("EditedOn", process.EditedOn.ToShortDateString()));
                 parameters.Add(new ReportParameter("ApprovedBy", process.ApprovedBy != null ? process.ApprovedBy : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedOn", process.ApprovedOn != null ? process.ApprovedOn.Value.ToShortDateString() : string.Empty));
                 LocalReport localReport = new LocalReport();
@@ -424,53 +453,61 @@ namespace OpenQMS.Controllers
                 localReport.SetParameters(parameters);
                 var result = localReport.Render("PDF");
 
+                //**Export details as signed pdf**
                 var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var fileName = Path.GetFileNameWithoutExtension("ProcessDetail.pdf");
                 var filePath = Path.Combine(basePath, $"ProcessDetail-{process.Id}.pdf");
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await stream.WriteAsync(result);
-                    }
-                }
-
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
                 process.ExportFilePath = filePath;
-
-                if (process.Status == ProcessStatus.Approved || process.Status == ProcessStatus.Obsolete)
-                {
-                    process.ExportFilePath = Helper.SignPDF(process.ExportFilePath);
-                }
+                //if (process.Status == ProcessStatus.Approved || process.Status == ProcessStatus.Obsolete)
+                //{
+                //    process.ExportFilePath = Helper.SignPDF(process.ExportFilePath);
+                //}
 
                 _context.Update(process);
                 await _context.SaveChangesAsync();
-            }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(process.ExportFilePath, FileMode.Open))
+                return File(result, "application/pdf", "ProcessDetail.pdf");
+            }
+            else
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
 
-            return File(memory, "application/pdf", "ProcessDetail.pdf");
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(process.ExportFilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+
+            //return File(memory, "application/pdf", "ProcessDetail.pdf");
         }
 
         public ActionResult ExportDetailInCSV(int id)
         {
-            Process process = _context.Process.Where(x => x.Id == id).Include(x => x.Product).FirstOrDefault();
+            Process? process = _context.Process.Where(x => x.Id == id).Include(x => x.Product).FirstOrDefault();
+
+            if (process == null)
+            {
+                return NotFound();
+            }
 
             var builder = new StringBuilder();
             builder.AppendLine("Process Id,Name,Description,Product,Version,Status,Edited By,Edited On,Approved By,Approved On");
-            builder.AppendLine($"{process.ProcessId},{process.Name},{process.Description},{(process.Product != null ? process.Product.Name : String.Empty)},{process.Version},{process.Status},{(process.EditedBy != null ? process.EditedBy : String.Empty)},{(process.EditedOn != null ? process.EditedOn.ToShortDateString() : String.Empty)},{(process.ApprovedBy != null ? process.ApprovedBy : String.Empty)},{(process.ApprovedOn != null ? process.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
+            builder.AppendLine($"{process.ProcessId},{process.Name},{process.Description},{(process.Product != null ? process.Product.Name : String.Empty)},{process.Version},{process.Status},{(process.EditedBy != null ? process.EditedBy : String.Empty)},{process.EditedOn.ToShortDateString()},{(process.ApprovedBy != null ? process.ApprovedBy : String.Empty)},{(process.ApprovedOn != null ? process.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
 
             return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", "Process.csv");
         }

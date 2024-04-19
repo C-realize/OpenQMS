@@ -1,4 +1,25 @@
-﻿using System.Data;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +30,7 @@ using OpenQMS.Data;
 using OpenQMS.Models;
 using OpenQMS.Models.ViewModels;
 using OpenQMS.Services;
+using static OpenQMS.Models.Material;
 using static OpenQMS.Models.Process;
 
 namespace OpenQMS.Controllers
@@ -18,8 +40,12 @@ namespace OpenQMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-
-        public MaterialsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public MaterialsController
+            (
+                ApplicationDbContext context, 
+                UserManager<AppUser> userManager, 
+                SignInManager<AppUser> signInManager
+            )
         {
             _context = context;
             _userManager = userManager;
@@ -29,8 +55,8 @@ namespace OpenQMS.Controllers
         // GET: Materials
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Material.Include(c => c.Process).Include(x => x.EditedByUser).Include(a => a.ApprovedByUser);
-            return View(await applicationDbContext.ToListAsync());
+            var materialsList = await _context.Material.Include(c => c.Process).ToListAsync();
+            return View(materialsList);
         }
 
         // GET: Materials/Details/5
@@ -46,8 +72,6 @@ namespace OpenQMS.Controllers
                 .Include(a => a.Changes)
                 .Include(a => a.Deviations)
                 .Include(a => a.Capas)
-                .Include(a => a.EditedByUser)
-                .Include(a => a.ApprovedByUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (material == null)
@@ -77,7 +101,7 @@ namespace OpenQMS.Controllers
 
                 var userSigning = await _userManager.FindByEmailAsync(InputEmail);
                 var loggedUser = _userManager.GetUserName(User);
-                if (userSigning.UserName != loggedUser)
+                if ((userSigning == null) || (userSigning.UserName != loggedUser))
                 {
                     return Forbid();
                 }
@@ -88,10 +112,10 @@ namespace OpenQMS.Controllers
                     return Forbid();
                 }
 
-                if (material.Status == Material.MaterialStatus.Draft)
+                if (material.Status == MaterialStatus.Draft)
                 {
                     material.Version = Decimal.ToInt32(material.Version) + 1;
-                    material.ApprovedBy = Convert.ToInt32(_userManager.GetUserId(User));
+                    material.ApprovedBy = _userManager.GetUserName(User);
                     material.ApprovedOn = DateTime.Now;
                     material.Status = Material.MaterialStatus.Approved;
                     material.ExportFilePath = String.Empty;
@@ -132,6 +156,8 @@ namespace OpenQMS.Controllers
         }
 
         // POST: Materials/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("MaterialId,Name,Description,ProcessId")] Material material)
@@ -151,7 +177,7 @@ namespace OpenQMS.Controllers
 
                     prevId = prevId > 0 ? prevId + 1 : 1;
                     material.MaterialId = $"MAT-{prevId.ToString().PadLeft(2, '0')}";
-                    material.EditedBy = Convert.ToInt32(_userManager.GetUserId(User));
+                    material.EditedBy = _userManager.GetUserName(User);
                     material.EditedOn = DateTime.Now;
                     material.Version = Convert.ToDecimal(0.01);
                     material.IsLocked = false;
@@ -161,11 +187,12 @@ namespace OpenQMS.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
-            catch (DataException ex)
+            catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
             }
 
+            ViewData["Processes"] = _context.Process.Where(x => x.Status.Equals(ProcessStatus.Approved)).ToList();
             return View(material);
         }
 
@@ -183,11 +210,18 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
+            if (material.IsLocked)
+            {
+                return Forbid();
+            }
+
             ViewData["Processes"] = _context.Process.Where(x => x.Status.Equals(ProcessStatus.Approved)).ToList();
             return View(material);
         }
 
         // POST: Materials/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,MaterialId,Name,Description,ProcessId,Version,EditedBy,EditedOn,ApprovedBy,ApprovedOn,GeneratedFrom,IsLocked,Status")] Material material)
@@ -201,12 +235,17 @@ namespace OpenQMS.Controllers
             {
                 try
                 {
-                    material.EditedBy = Convert.ToInt32(_userManager.GetUserId(User));
-                    material.EditedOn = DateTime.Now;
+                    if (material.IsLocked)
+                    {
+                        return Forbid();
+                    }
+
                     material.Version += Convert.ToDecimal(0.01);
+                    material.EditedBy = _userManager.GetUserName(User);
+                    material.EditedOn = DateTime.Now;
                     material.ExportFilePath = string.Empty;
 
-                    if (material.Status == Material.MaterialStatus.Approved)
+                    if (material.Status == MaterialStatus.Approved)
                     {
                         if (material.IsLocked)
                         {
@@ -216,7 +255,7 @@ namespace OpenQMS.Controllers
                         {
                             _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Material ON;");
                             material.Id = _context.Material.Max(m => m.Id) + 1;
-                            material.Status = Material.MaterialStatus.Draft;
+                            material.Status = MaterialStatus.Draft;
                             material.ApprovedBy = null;
                             material.ApprovedOn = null;
                             material.GeneratedFrom = id.ToString();
@@ -227,14 +266,14 @@ namespace OpenQMS.Controllers
                             transaction.Commit();
                         }
 
-                        Material material1 = await _context.Material.FirstOrDefaultAsync(m => m.Id == id);
+                        Material? material1 = await _context.Material.FirstOrDefaultAsync(m => m.Id == id);
                         material1.IsLocked = true;
                         _context.Update(material1);
                         _context.SaveChanges();
                     }
                     else
                     {
-                        material.Status = Material.MaterialStatus.Draft;
+                        material.Status = MaterialStatus.Draft;
                         _context.Update(material);
                         await _context.SaveChangesAsync();
                     }
@@ -270,8 +309,6 @@ namespace OpenQMS.Controllers
                 .Include(p => p.Changes)
                 .Include(p => p.Deviations)
                 .Include(p => p.Capas)
-                .Include(p => p.EditedByUser)
-                .Include(p => p.ApprovedByUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (material == null)
@@ -279,7 +316,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            if (material.Status != Material.MaterialStatus.Draft)
+            if (material.Status != MaterialStatus.Draft)
             {
                 return Forbid();
             }
@@ -304,7 +341,7 @@ namespace OpenQMS.Controllers
                 .Include(p => p.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (material.Status != Material.MaterialStatus.Draft)
+            if (material.Status != MaterialStatus.Draft)
             {
                 return Forbid();
             }
@@ -322,7 +359,7 @@ namespace OpenQMS.Controllers
         {
             var materials = _context.Material.ToList();
             var dataSets = new List<PoliciesChartViewModel>();
-            var statusList = Enum.GetValues(typeof(Material.MaterialStatus)).Cast<Material.MaterialStatus>();
+            var statusList = Enum.GetValues(typeof(MaterialStatus)).Cast<MaterialStatus>();
             var labels = new List<string>();
             var random = new Random();
             var dataSet = new PoliciesChartViewModel();
@@ -370,7 +407,6 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportMaterialDetail(int id)
         {
-            string mimType = "";
             string path = Directory.GetCurrentDirectory() + "\\Reports\\MaterialDetailReport.rdlc";
             var material = await _context.Material
                 .Where(x => x.Id == id)
@@ -378,8 +414,6 @@ namespace OpenQMS.Controllers
                 .Include(a => a.Changes)
                 .Include(a => a.Deviations)
                 .Include(a => a.Capas)
-                .Include(a => a.EditedByUser)
-                .Include(a => a.ApprovedByUser)
                 .FirstOrDefaultAsync();
 
             if (material != null && string.IsNullOrEmpty(material.ExportFilePath))
@@ -390,7 +424,6 @@ namespace OpenQMS.Controllers
                 changeList = material.Changes != null ? material.Changes.ToList() : changeList;
                 var deviationList = new List<Deviation>();
                 deviationList = material.Deviations != null ? material.Deviations.ToList() : deviationList;
-                //Dictionary<string, string> parameters = new Dictionary<string, string>();
                 List<ReportParameter> parameters = new List<ReportParameter>();
                 parameters.Add(new ReportParameter("MaterialId", material.MaterialId));
                 parameters.Add(new ReportParameter("Name", material.Name));
@@ -400,9 +433,9 @@ namespace OpenQMS.Controllers
                 parameters.Add(new ReportParameter("DeviationCount", deviationList != null && deviationList.Count > 0 ? "false" : "true"));
                 parameters.Add(new ReportParameter("CapaCount", capaList != null && capaList.Count > 0 ? "false" : "true"));
                 parameters.Add(new ReportParameter("Status", material.Status.ToString()));
-                parameters.Add(new ReportParameter("EditedBy", material.EditedByUser != null ? material.EditedByUser.FirstName : string.Empty));
-                parameters.Add(new ReportParameter("EditedOn", material.EditedOn != null ? material.EditedOn.ToShortDateString() : string.Empty));
-                parameters.Add(new ReportParameter("ApprovedBy", material.ApprovedByUser != null ? material.ApprovedByUser.FirstName : string.Empty));
+                parameters.Add(new ReportParameter("EditedBy", material.EditedBy != null ? material.EditedBy : string.Empty));
+                parameters.Add(new ReportParameter("EditedOn", material.EditedOn.ToShortDateString()));
+                parameters.Add(new ReportParameter("ApprovedBy", material.ApprovedBy != null ? material.ApprovedBy : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedOn", material.ApprovedOn != null ? material.ApprovedOn.Value.ToShortDateString() : string.Empty));
                 LocalReport localReport = new LocalReport();
                 localReport.ReportPath = path;
@@ -412,52 +445,60 @@ namespace OpenQMS.Controllers
                 localReport.SetParameters(parameters);
                 var result = localReport.Render("PDF");
 
+                //**Export details as signed pdf**
                 var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"MaterialDetail-{material.Id}.pdf");
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await stream.WriteAsync(result);
-                    }
-                }
-
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
                 material.ExportFilePath = filePath;
-
-                if (material.Status == Material.MaterialStatus.Approved || material.Status == Material.MaterialStatus.Obsolete)
-                {
-                    material.ExportFilePath = Helper.SignPDF(material.ExportFilePath);
-                }
+                //if (material.Status == Material.MaterialStatus.Approved || material.Status == Material.MaterialStatus.Obsolete)
+                //{
+                //    material.ExportFilePath = Helper.SignPDF(material.ExportFilePath);
+                //}
 
                 _context.Update(material);
                 await _context.SaveChangesAsync();
-            }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(material.ExportFilePath, FileMode.Open))
+                return File(result, "application/pdf", "MaterialDetail.pdf");
+            }
+            else
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
 
-            return File(memory, "application/pdf", "MaterialDetail.pdf");
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(material.ExportFilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+
+            //return File(memory, "application/pdf", "MaterialDetail.pdf");
         }
 
         public ActionResult ExportDetailInCSV(int id)
         {
-            Material material = _context.Material.Where(x => x.Id == id).Include(x => x.Process).Include(x => x.EditedByUser).Include(x => x.ApprovedByUser).FirstOrDefault();
+            Material? material = _context.Material.Where(x => x.Id == id).Include(x => x.Process).FirstOrDefault();
+
+            if (material == null)
+            {
+                return NotFound();
+            }
 
             var builder = new StringBuilder();
             builder.AppendLine("Material Id,Name,Description,Process,Version,Status,Edited By,Edited On,Approved By,Approved On");
-            builder.AppendLine($"{material.MaterialId},{material.Name},{material.Description},{(material.Process != null ? material.Process.Name : String.Empty)},{material.Version},{material.Status},{(material.EditedByUser != null ? material.EditedByUser.FirstName : String.Empty)},{(material.EditedOn != null ? material.EditedOn.ToShortDateString() : String.Empty)},{(material.ApprovedByUser != null ? material.ApprovedByUser.FirstName : String.Empty)},{(material.ApprovedOn != null ? material.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
+            builder.AppendLine($"{material.MaterialId},{material.Name},{material.Description},{(material.Process != null ? material.Process.Name : String.Empty)},{material.Version},{material.Status},{(material.EditedBy != null ? material.EditedBy : String.Empty)},{material.EditedOn.ToShortDateString()},{(material.ApprovedOn != null ? material.ApprovedOn : String.Empty)},{(material.ApprovedOn != null ? material.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
 
             return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", "Process.csv");
         }

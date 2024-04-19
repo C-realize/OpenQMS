@@ -1,10 +1,32 @@
-﻿#nullable disable
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
 using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Reporting.NETCore;
 using OpenQMS.Authorization;
 using OpenQMS.Data;
 using OpenQMS.Models;
@@ -18,20 +40,28 @@ namespace OpenQMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<AppRole> _roleManager;
+        //private readonly IAuthorizationService _authorizationService;
 
-        public TrainingsController(ApplicationDbContext context, UserManager<AppUser> userManager, RoleManager<AppRole> roleManager)
+        public TrainingsController
+        (
+            ApplicationDbContext context, 
+            UserManager<AppUser> userManager, 
+            RoleManager<AppRole> roleManager
+            //IAuthorizationService authorizationService
+        )
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            //_authorizationService = authorizationService;
         }
 
         // GET: Trainings
         public async Task<IActionResult> Index()
         {
-            var trainings = _context.Training
+            var trainings = await _context.Training
                 .Include(t => t.Trainees)
-                .ToList();
+                .ToListAsync();
 
             // Only assigned trainings are shown UNLESS you're an administrator or manager.
             var isAuthorized = User.IsInRole(Constants.ManagersRole) ||
@@ -39,7 +69,7 @@ namespace OpenQMS.Controllers
             if (!isAuthorized)
             {
                 var currentUser = await _userManager.GetUserAsync(User);
-                var userTrainings = _context.UserTraining.Where(x => x.TraineeId == currentUser.Id).ToList();
+                var userTrainings = await _context.UserTraining.Where(x => x.TraineeId == currentUser.Id).ToListAsync();
                 var assignedTrainings = new List<Training>();
 
                 foreach (var training in userTrainings)
@@ -64,31 +94,57 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            var training = await _context.Training
+            var currentTraining = await _context.Training
                 .Include(x => x.CompletedByUser)
                 .Include(s => s.Trainees).ThenInclude(t => t.Trainee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (training == null)
+            if (currentTraining == null)
             {
                 return NotFound();
             }
 
-            if (!isUserVerified)
+            var isAuthorized = User.IsInRole(Constants.ManagersRole) ||
+                   User.IsInRole(Constants.AdministratorsRole);
+            if (!isAuthorized)
             {
-                ModelState.AddModelError("", "Username or password is incorrect");
+                bool userIsTrainee = false;
+                foreach (var trainee in currentTraining.Trainees)
+                {
+                    if (trainee.Trainee.UserName == _userManager.GetUserName(User))
+                    {
+                        userIsTrainee = true;
+                    }
+                }
+                if (userIsTrainee)
+                {
+                    return View(currentTraining);
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
+            else
+            {
+                if (!isUserVerified)
+                {
+                    ModelState.AddModelError("", "Username or password is incorrect");
+                }
 
-            return View(training);
+                return View(currentTraining);
+            }
         }
 
         // GET: Trainings/Create
-        public async Task<IActionResult> CreateAsync()
+        [Authorize(Roles = "Administrator,Manager")]
+        public async Task<IActionResult> Create()
         {
             var documents = from d in _context.AppDocument
                             select d;
             documents = documents.Where(d => d.Status == AppDocument.DocumentStatus.Approved);
+
             ViewData["Policies"] = documents.ToList();
             ViewData["Trainer"] = await _userManager.GetUsersInRoleAsync("Manager");
             ViewData["Roles"] = _roleManager.Roles.ToList();
@@ -96,19 +152,19 @@ namespace OpenQMS.Controllers
             return View();
         }
 
-        [Authorize(Roles = "Administrator,Manager")]
         // POST: Trainings/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator,Manager")]
         public async Task<IActionResult> Create([Bind("Id,TrainingId,Name,Description,Date,PolicyId,PolicyTitle,TrainerId,TrainerEmail,Trainees")] Training training, string roles)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var lastTraining = _context.Training.OrderByDescending(x => x.Id).FirstOrDefault();
+                    var lastTraining = await _context.Training.OrderByDescending(x => x.Id).FirstOrDefaultAsync();
                     var prevId = 0;
 
                     if (lastTraining != null && !string.IsNullOrEmpty(lastTraining.TrainingId))
@@ -118,14 +174,15 @@ namespace OpenQMS.Controllers
                     }
 
                     prevId = prevId > 0 ? prevId + 1 : 1;
-                    training.TrainingId = $"TRN-{prevId.ToString().PadLeft(2, '0')}";
                     var policy = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == training.PolicyId);
-                    training.Status = Training.TrainingStatus.Scheduled;
                     var trainer = await _userManager.FindByIdAsync(training.TrainerId);
+                    if (policy == null) { return NotFound(); }
+                    training.TrainingId = $"TRN-{prevId.ToString().PadLeft(2, '0')}";
+                    training.Status = Training.TrainingStatus.Scheduled;
                     training.PolicyTitle = policy.Title;
                     training.TrainerEmail = trainer.Email;
-
                     training.Trainees = new List<UserTraining>();
+
                     var usersInRole = await _userManager.GetUsersInRoleAsync(roles);
                     foreach (var user in usersInRole)
                     {
@@ -147,10 +204,12 @@ namespace OpenQMS.Controllers
                 //Log the error (uncomment dex variable name and add a line here to write a log.
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
+
             return View(training);
         }
 
         // GET: Trainings/Edit/5
+        [Authorize(Roles = "Administrator,Manager")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -175,6 +234,7 @@ namespace OpenQMS.Controllers
 
             ViewData["Policies"] = _context.AppDocument.ToList();
             ViewData["Trainer"] = _userManager.Users.ToList();
+
             PopulateAssignedTrainees(training);
             return View(training);
         }
@@ -193,15 +253,16 @@ namespace OpenQMS.Controllers
                     Assigned = assignedTrainees.Contains(user.Id)
                 });
             }
+
             ViewData["Trainees"] = viewModel;
         }
 
-        [Authorize(Roles = "Administrator,Manager")]
         // POST: Trainings/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator,Manager")]
         public async Task<IActionResult> Edit(int? id, string[] selectedTrainees)
         {
             if (id == 0)
@@ -213,6 +274,7 @@ namespace OpenQMS.Controllers
                 .Include(t => t.Trainees)
                     .ThenInclude(t => t.Trainee)
                 .FirstOrDefaultAsync(m => m.Id == id);
+            if (trainingToUpdate == null) { return NotFound(); }
 
             if (await TryUpdateModelAsync<Training>(trainingToUpdate,
                 "",
@@ -225,6 +287,7 @@ namespace OpenQMS.Controllers
                     {
                         var policy = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == trainingToUpdate.PolicyId);
                         var trainer = await _userManager.FindByIdAsync(trainingToUpdate.TrainerId);
+                        if (policy == null) { return NotFound(); }
                         trainingToUpdate.PolicyTitle = policy.Title;
                         trainingToUpdate.TrainerEmail = trainer.Email;
                         await _context.SaveChangesAsync();
@@ -236,6 +299,7 @@ namespace OpenQMS.Controllers
                             "Try again, and if the problem persists, " +
                             "see your system administrator.");
                     }
+
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -279,6 +343,7 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Trainings/Delete/5
+        [Authorize(Roles = "Administrator,Manager")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -303,13 +368,17 @@ namespace OpenQMS.Controllers
             return View(training);
         }
 
-        [Authorize(Roles = "Administrator,Manager")]
         // POST: Trainings/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator,Manager")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var training = await _context.Training.FindAsync(id);
+            if (training == null)
+            {
+                return NotFound();
+            }
 
             if (training.Status != Training.TrainingStatus.Completed)
             {
@@ -327,7 +396,7 @@ namespace OpenQMS.Controllers
         {
             bool isUserVerified;
             AppUser user = new AppUser();
-            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
                 if (string.IsNullOrEmpty(pwd))
@@ -340,7 +409,7 @@ namespace OpenQMS.Controllers
                         _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, pwd);
                     if (result == PasswordVerificationResult.Success)
                     {
-                        var training = _context.Training.FirstOrDefault(x => x.Id == id);
+                        var training = await _context.Training.FirstOrDefaultAsync(x => x.Id == id);
 
                         var isAuthorized = User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole);
                         if (!isAuthorized)
@@ -398,6 +467,119 @@ namespace OpenQMS.Controllers
             dataSets.Add(dataSet);
 
             return Json(new { dataSet = dataSets, labels });
+        }
+
+        public async Task<IActionResult> ExportTrainingCertificate(int id)
+        {
+            string path = Directory.GetCurrentDirectory() + "\\Reports\\TrainingCertificateReport.rdl";
+            var training = await _context.Training
+                .Include(x => x.CompletedByUser)
+                .Include(s => s.Trainees).ThenInclude(t => t.Trainee)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+            var trainee = await _userManager.GetUserAsync(User);
+
+            bool userIsTrainee = false;
+            foreach (var user in training.Trainees)
+            {
+                if (user.Trainee.UserName == trainee.UserName)
+                {
+                    userIsTrainee = true;
+                }
+            }
+            if (!userIsTrainee)
+            {
+                return Forbid();
+            }
+
+            if (training != null /*&& string.IsNullOrEmpty(training.ExportFilePath)*/)
+            {
+                var trainingDetails = new List<Training> { training };
+                var traineeDetails = new List<AppUser> { trainee };
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter("UserName", trainee.UserName));
+                parameters.Add(new ReportParameter("FirstName", trainee.FirstName));
+                parameters.Add(new ReportParameter("LastName", trainee.LastName));
+                parameters.Add(new ReportParameter("Email", trainee.Email));
+                LocalReport localReport = new LocalReport();
+                localReport.ReportPath = path;
+                localReport.DataSources.Add(new ReportDataSource("Training", trainingDetails));
+                localReport.DataSources.Add(new ReportDataSource("Trainee", traineeDetails));
+                localReport.SetParameters(parameters);
+                var result = localReport.Render("PDF");
+
+                //**Export details as signed pdf**
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
+                //if (product.Status == ProductStatus.Approved || product.Status == ProductStatus.Obsolete)
+                //{
+                //    product.ExportFilePath = Helper.SignPDF(product.ExportFilePath);
+                //}
+
+                return File(result, "application/pdf", "TrainingDetail.pdf");
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [Authorize(Roles = "Administrator,Manager")]
+        public async Task<IActionResult> ExportTrainingAttendance(int id)
+        {
+            string path = Directory.GetCurrentDirectory() + "\\Reports\\TrainingAttendanceReport.rdl";
+            var training = await _context.Training
+                .Include(x => x.CompletedByUser)
+                .Include(s => s.Trainees).ThenInclude(t => t.Trainee)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (training != null /*&& string.IsNullOrEmpty(training.ExportFilePath)*/)
+            {
+                var trainingDetails = new List<Training> { training };
+                var attendanceList = new List<AppUser>();
+                foreach (var user in training.Trainees)
+                {
+                    attendanceList.Add(user.Trainee);
+                }
+                LocalReport localReport = new LocalReport();
+                localReport.ReportPath = path;
+                localReport.DataSources.Add(new ReportDataSource("Training", trainingDetails));
+                localReport.DataSources.Add(new ReportDataSource("Trainee", attendanceList));
+                var result = localReport.Render("PDF");
+
+                //**Export details as signed pdf**
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
+                //if (product.Status == ProductStatus.Approved || product.Status == ProductStatus.Obsolete)
+                //{
+                //    product.ExportFilePath = Helper.SignPDF(product.ExportFilePath);
+                //}
+
+                return File(result, "application/pdf", "TrainingDetail.pdf");
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         private bool TrainingExists(int id)

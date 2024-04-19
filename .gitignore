@@ -372,3 +372,4 @@ openqms-service.yaml
 /Dockerfile
 /.dockerignore
 /docker-compose.dcproj
+/Properties/ServiceDependencies/OpenQMS20220604200937 - Web Deploy/profile.arm.json

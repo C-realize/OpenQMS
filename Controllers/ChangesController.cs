@@ -1,4 +1,26 @@
-﻿using System.Data;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
+using System.Data;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +31,7 @@ using OpenQMS.Data;
 using OpenQMS.Models;
 using OpenQMS.Models.ViewModels;
 using OpenQMS.Services;
+using static OpenQMS.Models.Capa;
 using static OpenQMS.Models.Change;
 
 namespace OpenQMS.Controllers
@@ -67,75 +90,6 @@ namespace OpenQMS.Controllers
             return View(change);
         }
 
-        // POST: Changes/Details/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Details(int id, [Bind("Id,ChangeId,ProductId,ProcessId,AssetId,MaterialId,CapaId,Title,Proposal,ProposedBy,ProposedOn,Assessment,AssessedBy,AssessedOn,AcceptedBy,AcceptedOn,Implementation,ImplementedBy,ImplementedOn,Status")] Change change, string InputEmail, string InputPassword)
-        {
-            if (id != change.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var isAuthorized = User.IsInRole(Constants.ManagersRole)
-                            || User.IsInRole(Constants.AdministratorsRole);
-                    if (!isAuthorized)
-                    {
-                        return Forbid();
-                    }
-
-                    var userSigning = await _userManager.FindByEmailAsync(InputEmail);
-                    var loggedUser = _userManager.GetUserName(User);
-                    if (userSigning.UserName != loggedUser)
-                    {
-                        return Forbid();
-                    }
-
-                    var result = await _signInManager.PasswordSignInAsync(userSigning.UserName, InputPassword, isPersistent: false, lockoutOnFailure: false);
-                    if (!result.Succeeded)
-                    {
-                        return Forbid();
-                    }
-
-                    if (change.Status == Change.ChangeStatus.Assessment)
-                    {
-                        change.AcceptedBy = _userManager.GetUserName(User);
-                        change.AcceptedOn = DateTime.Now;
-                        change.Status = Change.ChangeStatus.Accepted;
-                    }
-
-                    if (change.Status == Change.ChangeStatus.Implementation)
-                    {
-                        change.ApprovedBy = _userManager.GetUserName(User);
-                        change.ApprovedOn = DateTime.Now;
-                        change.Status = Change.ChangeStatus.Approved;
-                    }
-
-                    _context.Change.Update(change);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ChangeExists(change.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(change);
-        }
-
         // GET: Changes/Create
         public IActionResult Create()
         {
@@ -159,7 +113,7 @@ namespace OpenQMS.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var lastChange = _context.Change.OrderByDescending(x => x.Id).FirstOrDefault();
+                    var lastChange = _context.Change.OrderByDescending(x => x.ChangeId).FirstOrDefault();
                     var prevId = 0;
 
                     if (lastChange != null && !string.IsNullOrEmpty(lastChange.ChangeId))
@@ -179,12 +133,16 @@ namespace OpenQMS.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
-            catch (DataException /* dex */)
+            catch (Exception)
             {
-                //Log the error (uncomment dex variable name and add a line here to write a log.
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
 
+            ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(Product.ProductStatus.Approved)).ToList();
+            ViewData["Processes"] = _context.Process.Where(x => x.Status.Equals(Process.ProcessStatus.Approved)).ToList();
+            ViewData["Assets"] = _context.Asset.Where(x => x.Status.Equals(Asset.AssetStatus.Approved)).ToList();
+            ViewData["Materials"] = _context.Material.Where(x => x.Status.Equals(Material.MaterialStatus.Approved)).ToList();
+            ViewData["Capa"] = _context.Capa.Where(x => x.Status.Equals(Capa.CapaStatus.Approved)).ToList();
             return View(change);
         }
 
@@ -200,6 +158,11 @@ namespace OpenQMS.Controllers
             if (change == null)
             {
                 return NotFound();
+            }
+
+            if (change.Status == ChangeStatus.Approved)
+            {
+                return Forbid();
             }
 
             ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(Product.ProductStatus.Approved)).ToList();
@@ -227,22 +190,22 @@ namespace OpenQMS.Controllers
             {
                 try
                 {
-                    if (change.Status == Change.ChangeStatus.Approved)
+                    if (change.Status == ChangeStatus.Approved)
                     {
                         return Forbid();
                     }
 
-                    if (change.Status == Change.ChangeStatus.Proposal || change.Status == Change.ChangeStatus.Assessment)
+                    if (change.Status == ChangeStatus.Proposal || change.Status == ChangeStatus.Assessment)
                     {
                         change.AssessedBy = _userManager.GetUserName(User);
                         change.AssessedOn = DateTime.Now;
-                        change.Status = Change.ChangeStatus.Assessment;
+                        change.Status = ChangeStatus.Assessment;
                     }
-                    if (change.Status == Change.ChangeStatus.Accepted || change.Status == Change.ChangeStatus.Implementation)
+                    if (change.Status == ChangeStatus.Accepted || change.Status == ChangeStatus.Implementation)
                     {
                         change.ImplementedBy = _userManager.GetUserName(User);
                         change.ImplementedOn = DateTime.Now;
-                        change.Status = Change.ChangeStatus.Implementation;
+                        change.Status = ChangeStatus.Implementation;
                     }
 
                     change.ExportFilePath = string.Empty;
@@ -308,14 +271,14 @@ namespace OpenQMS.Controllers
                             .Include(d => d.Capa)
                             .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (change.Status == ChangeStatus.Accepted || change.Status == ChangeStatus.Approved || change.Status == ChangeStatus.Implementation)
-            {
-                return Forbid();
-            }
-
             if (change != null)
             {
                 _context.Change.Remove(change);
+            }
+
+            if (change.Status == ChangeStatus.Accepted || change.Status == ChangeStatus.Approved || change.Status == ChangeStatus.Implementation)
+            {
+                return Forbid();
             }
 
             await _context.SaveChangesAsync();
@@ -324,9 +287,14 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> Accepted(int id, string email, string pwd)
         {
+            if (_context.Change == null)
+            {
+                return NotFound();
+            }
+
             bool isUserVerified;
-            AppUser user = new AppUser();
-            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            AppUser user = new();
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
                 if (string.IsNullOrEmpty(pwd))
@@ -377,9 +345,14 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> Approved(int id, string email, string pwd)
         {
+            if (_context.Change == null)
+            {
+                return NotFound();
+            }
+
             bool isUserVerified;
-            AppUser user = new AppUser();
-            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            AppUser user = new();
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
                 if (string.IsNullOrEmpty(pwd))
@@ -430,7 +403,11 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportChangeDetail(int id)
         {
-            string mimType = "";
+            if (_context.Change == null)
+            {
+                return NotFound();
+            }
+
             string path = Directory.GetCurrentDirectory() + "\\Reports\\ChangeDetailReport.rdlc";
             var change = await _context.Change
                 .Where(x => x.Id == id)
@@ -465,54 +442,65 @@ namespace OpenQMS.Controllers
                 parameters.Add(new ReportParameter("ImplementedOn", change.ImplementedOn.HasValue ? change.ImplementedOn.Value.ToShortDateString() : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedBy", change.ApprovedBy != null ? change.ApprovedBy : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedOn", change.ApprovedOn != null ? change.ApprovedOn.Value.ToShortDateString() : string.Empty));
-                
                 LocalReport localReport = new LocalReport();
                 localReport.ReportPath = path;
                 localReport.SetParameters(parameters);
                 var result = localReport.Render("PDF");
 
+                //**Export details as signed pdf**
                 var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"ChangeDetail-{change.Id}.pdf");
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await stream.WriteAsync(result);
-                    }
-                }
-                
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
                 change.ExportFilePath = filePath;
-
-                if (change.Status == ChangeStatus.Approved)
-                {
-                    change.ExportFilePath = Helper.SignPDF(change.ExportFilePath);
-                }
+                //if (change.Status == ChangeStatus.Approved)
+                //{
+                //    change.ExportFilePath = Helper.SignPDF(change.ExportFilePath);
+                //}
 
                 _context.Update(change);
                 await _context.SaveChangesAsync();
-            }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(change.ExportFilePath, FileMode.Open))
+                return File(result, "application/pdf", "ChangeDetail.pdf");
+            }
+            else
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
 
-            return File(memory, "application/pdf", "ChangeDetail.pdf");
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(change.ExportFilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+
+            //return File(memory, "application/pdf", "ChangeDetail.pdf");
         }
 
         public ActionResult ExportDetailInCSV(int id)
         {
+            if (_context.Change == null)
+            {
+                return NotFound();
+            }
+
             Change change = _context.Change.Where(x => x.Id == id).FirstOrDefault();
+            if (change == null)
+            {
+                return NotFound();
+            }
 
             var builder = new StringBuilder();
             builder.AppendLine("Change Id,Title,Status,Product,Process,Asset,Material,CAPA,Proposal,Proposed By,Proposed On,Assessment,Assessed By,Assessed On,Accepted By,Accepted On,Implementation,Implemented By,Implemented On,Approved By,Approved On");
@@ -523,6 +511,11 @@ namespace OpenQMS.Controllers
 
         public ActionResult GetDocuments()
         {
+            if (_context.Change == null)
+            {
+                return NotFound();
+            }
+
             var changes = _context.Change.ToList();
             var dataSets = new List<PoliciesChartViewModel>();
             var statusList = Enum.GetValues(typeof(ChangeStatus)).Cast<ChangeStatus>();

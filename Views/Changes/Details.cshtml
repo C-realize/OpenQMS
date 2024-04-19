@@ -1,4 +1,26 @@
-﻿@model OpenQMS.Models.Change
+﻿@*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*@
+
+@model OpenQMS.Models.Change
 
 @{
     ViewData["Title"] = "Details";
@@ -162,7 +184,7 @@
     <input type="hidden" id="ChangeId" value="@Model.Id" />
     @if (User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole))
     {
-        @if (Model.Status == OpenQMS.Models.Change.ChangeStatus.Assessment || Model.Status == OpenQMS.Models.Change.ChangeStatus.Implementation)
+        @if (Model.Status == Change.ChangeStatus.Assessment || Model.Status == Change.ChangeStatus.Implementation)
         {
             <div class="row">
                 <div class="col-md-4">
@@ -177,61 +199,24 @@
                 </div>
             </div>
         }
-        @if (Model.Status == OpenQMS.Models.Change.ChangeStatus.Assessment)
+        @if (Model.Status == Change.ChangeStatus.Assessment)
         {
             <br />
             <button class="btn btn-success" id="btnAccepted">Accept</button>
         }
-        else if (Model.Status == OpenQMS.Models.Change.ChangeStatus.Implementation)
+        else if (Model.Status == Change.ChangeStatus.Implementation)
         {
             <br />
             <button class="btn btn-success" id="btnApproved">Approve</button>
         }
     }
 </div>
-
-<br />
-@*<div class="row">
-    <div class="col-md-4">
-        @if (Model.Status == Change.ChangeStatus.Assessment || Model.Status == Change.ChangeStatus.Implementation)
-        {
-            @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
-            {
-                <form style="display:inline;" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="Title" />
-                    <input type="hidden" asp-for="ChangeId" />
-                    <input type="hidden" asp-for="ProductId" />
-                    <input type="hidden" asp-for="CapaId" />
-                    <input type="hidden" asp-for="Proposal" />
-                    <input type="hidden" asp-for="ProposedBy" />
-                    <input type="hidden" asp-for="ProposedOn" />
-                    <input type="hidden" asp-for="Assessment" />
-                    <input type="hidden" asp-for="AssessedBy" />
-                    <input type="hidden" asp-for="AssessedOn" />
-                    <input type="hidden" asp-for="AcceptedBy" />
-                    <input type="hidden" asp-for="AcceptedOn" />
-                    <input type="hidden" asp-for="Implementation" />
-                    <input type="hidden" asp-for="ImplementedBy" />
-                    <input type="hidden" asp-for="ImplementedOn" />
-                    <input type="hidden" asp-for="Status" />
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" name="InputEmail" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" name="InputPassword" class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-xs btn-success">Approve</button>
-                </form>
-            }
-        }
-    </div>
-</div>*@
-
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> <span>|</span>
+    @if (Model.Status != Change.ChangeStatus.Approved)
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> <span>|</span>
+        <br />
+    }
     <a asp-action="Index">Back to List</a>
 </div>
 

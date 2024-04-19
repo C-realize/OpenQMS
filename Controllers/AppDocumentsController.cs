@@ -1,4 +1,26 @@
-﻿using System.Data;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
+using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +48,13 @@ namespace OpenQMS.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IAuthorizationService _authorizationService;
 
-        public AppDocumentsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IAuthorizationService authorizationService)
+        public AppDocumentsController
+        (
+            ApplicationDbContext context, 
+            UserManager<AppUser> userManager, 
+            SignInManager<AppUser> signInManager, 
+            IAuthorizationService authorizationService
+        )
         {
             _context = context;
             _userManager = userManager;
@@ -35,12 +63,12 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Documents
-        public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? pageNumber)
+        public async Task<IActionResult> Index()
         {
             var documents = from d in _context.AppDocument
                             select d;
 
-            var isAuthorized = User.IsInRole(Constants.ManagersRole) 
+            var isAuthorized = User.IsInRole(Constants.ManagersRole)
                             || User.IsInRole(Constants.AdministratorsRole);
             if (!isAuthorized)
             {
@@ -49,8 +77,7 @@ namespace OpenQMS.Controllers
                                               || d.AuthoredBy == currentUserName);
             }
 
-            int pageSize = 5;
-            return View(await PaginatedList<AppDocument>.CreateAsync(documents.AsNoTracking(), pageNumber ?? 1, pageSize));
+            return View(await documents.ToListAsync());
         }
 
         // GET: Documents/Details/5
@@ -67,7 +94,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            var isAuthorized = User.IsInRole(Constants.ManagersRole) 
+            var isAuthorized = User.IsInRole(Constants.ManagersRole)
                             || User.IsInRole(Constants.AdministratorsRole);
             var currentUserName = _userManager.GetUserName(User);
             if (!isAuthorized
@@ -89,14 +116,14 @@ namespace OpenQMS.Controllers
             }
 
             //Dowload from filesystem
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(document.FilePath, FileMode.Open))
-            {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(document.FilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
 
-            return File(/*document.Content,*/ memory, document.FileType, document.Title + document.FileExtension);
+            return File(document.Content, /*memory,*/ document.FileType, document.Title + document.FileExtension);
         }
 
         // POST: Documents/Details/5
@@ -141,9 +168,9 @@ namespace OpenQMS.Controllers
                 documentPdf.ApprovedOn = DateTime.Now;
                 documentPdf.Status = AppDocument.DocumentStatus.Approved;
 
-                if (documentPdf.FileExtension.Equals(".pdf") && !string.IsNullOrEmpty(documentPdf.FilePath))
+                if (documentPdf.FileExtension.Equals(".pdf") /*&& !string.IsNullOrEmpty(documentPdf.FilePath)*/)
                 {
-                    documentPdf.FilePath = Helper.SignPDF(documentPdf.FilePath);
+                    documentPdf./*FilePath*/Content = Helper.SignPDF(documentPdf./*FilePath*/Content);
                 }
 
                 if (documentPdf.GeneratedFrom != null && !string.IsNullOrEmpty(documentPdf.GeneratedFrom))
@@ -304,35 +331,35 @@ namespace OpenQMS.Controllers
                     document.FileExtension = Path.GetExtension(file.FileName);
 
                     //**Upload file to filesystem**
-                    var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
-                    bool basePathExists = System.IO.Directory.Exists(basePath);
-                    if (!basePathExists) Directory.CreateDirectory(basePath);
-                    var fileName = Path.GetFileNameWithoutExtension(file.FileName);
-                    var filePath = Path.Combine(basePath, file.FileName);
-                    if (!System.IO.File.Exists(filePath))
-                    {
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        document.FilePath = filePath;
-                    }
+                    //var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                    //bool basePathExists = System.IO.Directory.Exists(basePath);
+                    //if (!basePathExists) Directory.CreateDirectory(basePath);
+                    //var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                    //var filePath = Path.Combine(basePath, file.FileName);
+                    //if (!System.IO.File.Exists(filePath))
+                    //{
+                    //    using (var stream = new FileStream(filePath, FileMode.Create))
+                    //    {
+                    //        await file.CopyToAsync(stream);
+                    //    }
+                    //    document.FilePath = filePath;
+                    //}
 
                     //**Upload file to database**
-                    //using (var memoryStream = new MemoryStream())
-                    //{
-                    //    await file.CopyToAsync(memoryStream);
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(memoryStream);
 
-                    //    Upload the file if less than 2 MB (recommendation)
-                    //    if (memoryStream.Length < 2097152)
-                    //    {
-                    //        document.Content = memoryStream.ToArray();
-                    //    }
-                    //    else
-                    //    {
-                    //        ModelState.AddModelError("File", "The file is too large.");
-                    //    }
-                    //}
+                        //Upload the file if less than 2 MB(recommendation)
+                        if (memoryStream.Length < 2097152)
+                        {
+                            document.Content = memoryStream.ToArray();
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("File", "The file is too large.");
+                        }
+                    }
 
                     var isAuthorized = await _authorizationService.AuthorizeAsync(User, document, DocumentOperations.Create);
                     if (!isAuthorized.Succeeded)
@@ -405,35 +432,35 @@ namespace OpenQMS.Controllers
                     document.FileExtension = Path.GetExtension(file.FileName);
 
                     //**Upload file to filesystem**
-                    var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
-                    bool basePathExists = System.IO.Directory.Exists(basePath);
-                    if (!basePathExists) Directory.CreateDirectory(basePath);
-                    var fileName = Path.GetFileNameWithoutExtension(file.FileName);
-                    var filePath = Path.Combine(basePath, file.FileName);
-                    if (!System.IO.File.Exists(filePath))
-                    {
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        document.FilePath = filePath;
-                    }
+                    //var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                    //bool basePathExists = System.IO.Directory.Exists(basePath);
+                    //if (!basePathExists) Directory.CreateDirectory(basePath);
+                    //var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                    //var filePath = Path.Combine(basePath, file.FileName);
+                    //if (!System.IO.File.Exists(filePath))
+                    //{
+                    //    using (var stream = new FileStream(filePath, FileMode.Create))
+                    //    {
+                    //        await file.CopyToAsync(stream);
+                    //    }
+                    //    document.FilePath = filePath;
+                    //}
 
                     //**Upload file to database * *
-                    //using (var memoryStream = new MemoryStream())
-                    //{
-                    //    await file.CopyToAsync(memoryStream);
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(memoryStream);
 
-                    //    Upload the file if less than 2 MB(recommendation)
-                    //    if (memoryStream.Length < 2097152)
-                    //    {
-                    //        document.Content = memoryStream.ToArray();
-                    //    }
-                    //    else
-                    //    {
-                    //        ModelState.AddModelError("File", "The file is too large.");
-                    //    }
-                    //}
+                        //Upload the file if less than 2 MB(recommendation)
+                        if (memoryStream.Length < 2097152)
+                        {
+                            document.Content = memoryStream.ToArray();
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("File", "The file is too large.");
+                        }
+                    }
 
                     var isAuthorized = await _authorizationService.AuthorizeAsync(User, document, DocumentOperations.Update);
                     if (!isAuthorized.Succeeded)

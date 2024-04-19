@@ -1,4 +1,26 @@
-﻿@model OpenQMS.Models.Deviation
+﻿@*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*@
+
+@model OpenQMS.Models.Deviation
 
 @{
     ViewData["Title"] = "Details";
@@ -177,7 +199,7 @@
     <input type="hidden" id="DeviationId" value="@Model.Id" />
     @if (User.IsInRole(Constants.AdministratorsRole) || User.IsInRole(Constants.ManagersRole))
     {
-        @if (Model.Status == OpenQMS.Models.Deviation.DeviationStatus.Evaluation || Model.Status == OpenQMS.Models.Deviation.DeviationStatus.Resolution)
+        @if (Model.Status == Deviation.DeviationStatus.Evaluation || Model.Status == Deviation.DeviationStatus.Resolution)
         {
             <div class="row">
                 <div class="col-md-4">
@@ -192,12 +214,12 @@
                 </div>
             </div>
         }
-        @if (Model.Status == OpenQMS.Models.Deviation.DeviationStatus.Evaluation)
+        @if (Model.Status == Deviation.DeviationStatus.Evaluation)
         {
             <br />
             <button class="btn btn-success" id="btnAccepted">Accept</button>
         }
-        else if (Model.Status == OpenQMS.Models.Deviation.DeviationStatus.Resolution)
+        else if (Model.Status == Deviation.DeviationStatus.Resolution)
         {
             <br />
             <button class="btn btn-success" id="btnApproved">Approve</button>
@@ -206,7 +228,11 @@
 </div>
 
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> <span>|</span>
+    @if (Model.Status != Deviation.DeviationStatus.Approved)
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> <span>|</span>
+        <br />
+    }
     <a asp-action="Index">Back to List</a>
 </div>
 

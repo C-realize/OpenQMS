@@ -1,4 +1,26 @@
-﻿using System.Data;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
+using System.Data;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,8 +56,9 @@ namespace OpenQMS.Controllers
         // GET: Deviations
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Deviation.Include(d => d.Product);
-            return View(await applicationDbContext.ToListAsync());
+            return _context.Deviation != null ?
+                View(await _context.Deviation.ToListAsync()) :
+                Problem("Entity set 'ApplicationDbContext.Deviation'  is null.");
         }
 
         // GET: Deviations/Details/5
@@ -82,15 +105,13 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-
-        //Do we need to bind all properties???
         public async Task<IActionResult> Create([Bind("Title,DeviationId,ProcessId,AssetId,MaterialId,ProductId,Identification,IdentifiedBy")] Deviation deviation)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var lastDeviation = _context.Deviation.OrderByDescending(x => x.Id).FirstOrDefault();
+                    var lastDeviation = _context.Deviation.OrderByDescending(x => x.DeviationId).FirstOrDefault();
                     var prevId = 0;
 
                     if (lastDeviation != null && !string.IsNullOrEmpty(lastDeviation.DeviationId))
@@ -109,12 +130,15 @@ namespace OpenQMS.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
-            catch (DataException /* dex */)
+            catch (Exception)
             {
-                //Log the error (uncomment dex variable name and add a line here to write a log.
-                ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
+                ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists, see your system administrator.");
             }
 
+            ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(Product.ProductStatus.Approved)).ToList();
+            ViewData["Processes"] = _context.Process.Where(x => x.Status.Equals(Process.ProcessStatus.Approved)).ToList();
+            ViewData["Assets"] = _context.Asset.Where(x => x.Status.Equals(Asset.AssetStatus.Approved)).ToList();
+            ViewData["Materials"] = _context.Material.Where(x => x.Status.Equals(Material.MaterialStatus.Approved)).ToList();
             return View(deviation);
         }
 
@@ -130,6 +154,11 @@ namespace OpenQMS.Controllers
             if (deviation == null)
             {
                 return NotFound();
+            }
+
+            if (deviation.Status == DeviationStatus.Approved)
+            {
+                return Forbid();
             }
 
             ViewData["Products"] = _context.Product.Where(x => x.Status.Equals(Product.ProductStatus.Approved)).ToList();
@@ -156,22 +185,22 @@ namespace OpenQMS.Controllers
             {
                 try
                 {
-                    if (deviation.Status == Deviation.DeviationStatus.Approved)
+                    if (deviation.Status == DeviationStatus.Approved)
                     {
                         return Forbid();
                     }
 
-                    if (deviation.Status == Deviation.DeviationStatus.Identification || deviation.Status == Deviation.DeviationStatus.Evaluation)
+                    if (deviation.Status == DeviationStatus.Identification || deviation.Status == DeviationStatus.Evaluation)
                     {
                         deviation.EvaluatedBy = _userManager.GetUserName(User);
                         deviation.EvaluatedOn = DateTime.Now;
-                        deviation.Status = Deviation.DeviationStatus.Evaluation;
+                        deviation.Status = DeviationStatus.Evaluation;
                     }
-                    else if (deviation.Status == Deviation.DeviationStatus.Accepted || deviation.Status == Deviation.DeviationStatus.Resolution)
+                    else if (deviation.Status == DeviationStatus.Accepted || deviation.Status == DeviationStatus.Resolution)
                     {
                         deviation.ResolvedBy = _userManager.GetUserName(User);
                         deviation.ResolvedOn = DateTime.Now;
-                        deviation.Status = Deviation.DeviationStatus.Resolution;
+                        deviation.Status = DeviationStatus.Resolution;
                     }
 
                     deviation.ExportFilePath = string.Empty;
@@ -237,14 +266,14 @@ namespace OpenQMS.Controllers
                            .Include(d => d.Capas)
                            .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (deviation.Status == DeviationStatus.Accepted || deviation.Status == DeviationStatus.Approved || deviation.Status == DeviationStatus.Resolution)
-            {
-                return Forbid();
-            }
-
             if (deviation != null)
             {
                 _context.Deviation.Remove(deviation);
+            }
+
+            if (deviation.Status == DeviationStatus.Accepted || deviation.Status == DeviationStatus.Approved || deviation.Status == DeviationStatus.Resolution)
+            {
+                return Forbid();
             }
 
             await _context.SaveChangesAsync();
@@ -253,9 +282,14 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> Accepted(int id, string email, string pwd)
         {
+            if (_context.Deviation == null)
+            {
+                return NotFound();
+            }
+
             bool isUserVerified;
-            AppUser user = new AppUser();
-            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            AppUser user = new();
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
                 if (string.IsNullOrEmpty(pwd))
@@ -306,9 +340,14 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> Approved(int id, string email, string pwd)
         {
+            if (_context.Deviation == null)
+            {
+                return NotFound();
+            }
+
             bool isUserVerified;
-            AppUser user = new AppUser();
-            user = _context.Users.FirstOrDefault(x => x.Email == email);
+            AppUser user = new();
+            user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user != null)
             {
                 if (string.IsNullOrEmpty(pwd))
@@ -359,7 +398,11 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportDeviationDetail(int id)
         {
-            string mimType = "";
+            if (_context.Deviation == null)
+            {
+                return NotFound();
+            }
+
             string path = Directory.GetCurrentDirectory() + "\\Reports\\DeviationDetailReport.rdlc";
             var deviation = await _context.Deviation
                 .Where(x => x.Id == id)
@@ -396,55 +439,66 @@ namespace OpenQMS.Controllers
                 parameters.Add(new ReportParameter("ResolvedOn", deviation.ResolvedOn.HasValue ? deviation.ResolvedOn.Value.ToShortDateString() : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedBy", deviation.ApprovedBy != null ? deviation.ApprovedBy : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedOn", deviation.ApprovedOn != null ? deviation.ApprovedOn.Value.ToShortDateString() : string.Empty));
-
-                LocalReport localReport = new LocalReport();
+                LocalReport localReport = new();
                 localReport.ReportPath = path;
                 localReport.DataSources.Add(new ReportDataSource("CAPA", capaList));
                 localReport.SetParameters(parameters);
                 var result = localReport.Render("PDF");
 
+                //**Export details as signed pdf**
                 var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"DeviationDetail-{deviation.Id}.pdf");
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await stream.WriteAsync(result);
-                    }
-                }
-
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
                 deviation.ExportFilePath = filePath;
-
-                if (deviation.Status == DeviationStatus.Approved)
-                {
-                    deviation.ExportFilePath = Helper.SignPDF(deviation.ExportFilePath);
-                }
+                //if (deviation.Status == DeviationStatus.Approved)
+                //{
+                //    deviation.ExportFilePath = Helper.SignPDF(deviation.ExportFilePath);
+                //}
 
                 _context.Update(deviation);
                 await _context.SaveChangesAsync();
-            }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(deviation.ExportFilePath, FileMode.Open))
+                return File(result, "application/pdf", "DeviationDetail.pdf");
+            }
+            else
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
 
-            return File(memory, "application/pdf", "DeviationDetail.pdf");
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(deviation.ExportFilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+
+            //return File(memory, "application/pdf", "DeviationDetail.pdf");
         }
 
         public ActionResult ExportDetailInCSV(int id)
         {
+            if (_context.Deviation == null)
+            {
+                return NotFound();
+            }
+
             Deviation deviation = _context.Deviation.Where(x => x.Id == id).FirstOrDefault();
+            if (deviation == null)
+            {
+                return NotFound();
+            }
 
             var builder = new StringBuilder();
             builder.AppendLine("Deviation Id,Title,Status,Product,Process,Asset,Material,Identification,Identified By,Identified On,Evaluation,Evaluated By,Evaluated On,Accepted By,Accepted On,Resolution,Resolved By,Resolved On,Approved By,Approved On");
@@ -455,6 +509,11 @@ namespace OpenQMS.Controllers
 
         public ActionResult GetDocuments()
         {
+            if (_context.Deviation == null)
+            {
+                return NotFound();
+            }
+
             var deviations = _context.Deviation.ToList();
             var dataSets = new List<PoliciesChartViewModel>();
             var statusList = Enum.GetValues(typeof(DeviationStatus)).Cast<DeviationStatus>();

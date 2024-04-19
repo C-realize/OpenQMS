@@ -1,4 +1,25 @@
-﻿using System.Data;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +30,7 @@ using OpenQMS.Data;
 using OpenQMS.Models;
 using OpenQMS.Models.ViewModels;
 using OpenQMS.Services;
+using static OpenQMS.Models.Asset;
 using static OpenQMS.Models.Process;
 
 namespace OpenQMS.Controllers
@@ -18,8 +40,12 @@ namespace OpenQMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-
-        public AssetsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AssetsController
+            (
+                ApplicationDbContext context, 
+                UserManager<AppUser> userManager, 
+                SignInManager<AppUser> signInManager
+            )
         {
             _context = context;
             _userManager = userManager;
@@ -29,8 +55,8 @@ namespace OpenQMS.Controllers
         // GET: Assets
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Asset.Include(c => c.Process).Include(x => x.EditedByUser).Include(a => a.ApprovedByUser);
-            return View(await applicationDbContext.ToListAsync());
+            var assetsList = await _context.Asset.Include(c => c.Process).ToListAsync();
+            return View(assetsList);
         }
 
         // GET: Assets/Details/5
@@ -46,8 +72,6 @@ namespace OpenQMS.Controllers
                 .Include(a => a.Changes)
                 .Include(a => a.Deviations)
                 .Include(a => a.Capas)
-                .Include(a => a.EditedByUser)
-                .Include(a => a.ApprovedByUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (asset == null)
@@ -77,7 +101,7 @@ namespace OpenQMS.Controllers
 
                 var userSigning = await _userManager.FindByEmailAsync(InputEmail);
                 var loggedUser = _userManager.GetUserName(User);
-                if (userSigning.UserName != loggedUser)
+                if ((userSigning == null) || (userSigning.UserName != loggedUser))
                 {
                     return Forbid();
                 }
@@ -88,19 +112,19 @@ namespace OpenQMS.Controllers
                     return Forbid();
                 }
 
-                if (asset.Status == Asset.AssetStatus.Draft)
+                if (asset.Status == AssetStatus.Draft)
                 {
                     asset.Version = Decimal.ToInt32(asset.Version) + 1;
-                    asset.ApprovedBy = Convert.ToInt32(_userManager.GetUserId(User));
+                    asset.ApprovedBy = _userManager.GetUserName(User);
                     asset.ApprovedOn = DateTime.Now;
-                    asset.Status = Asset.AssetStatus.Approved;
+                    asset.Status = AssetStatus.Approved;
                     asset.ExportFilePath = String.Empty;
 
                     if (asset.GeneratedFrom != null && !string.IsNullOrEmpty(asset.GeneratedFrom))
                     {
                         var oldAsset = await _context.Asset.FirstOrDefaultAsync(m => m.Id.ToString().Equals(asset.GeneratedFrom));
 
-                        oldAsset.Status = Asset.AssetStatus.Obsolete;
+                        oldAsset.Status = AssetStatus.Obsolete;
                         asset.ExportFilePath = String.Empty;
                         _context.Asset.Update(oldAsset);
                     }
@@ -151,7 +175,7 @@ namespace OpenQMS.Controllers
 
                     prevId = prevId > 0 ? prevId + 1 : 1;
                     asset.AssetId = $"AST-{prevId.ToString().PadLeft(2, '0')}";
-                    asset.EditedBy = Convert.ToInt32(_userManager.GetUserId(User));
+                    asset.EditedBy = _userManager.GetUserName(User);
                     asset.EditedOn = DateTime.Now;
                     asset.Version = Convert.ToDecimal(0.01);
                     asset.IsLocked = false;
@@ -161,11 +185,12 @@ namespace OpenQMS.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
-            catch (DataException ex)
+            catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
             }
 
+            ViewData["Processes"] = _context.Process.Where(x => x.Status.Equals(ProcessStatus.Approved)).ToList();
             return View(asset);
         }
 
@@ -183,11 +208,18 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
+            if (asset.IsLocked)
+            {
+                return Forbid();
+            }
+
             ViewData["Processes"] = _context.Process.Where(x => x.Status.Equals(ProcessStatus.Approved)).ToList();
             return View(asset);
         }
 
         // POST: Assets/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,AssetId,GeneratedFrom,Name,Description,ProcessId,Version,EditedBy,EditedOn,ApprovedBy,ApprovedOn,IsLocked,Status")] Asset asset)
@@ -206,18 +238,18 @@ namespace OpenQMS.Controllers
                         return Forbid();
                     }
 
-                    asset.EditedBy = Convert.ToInt32(_userManager.GetUserId(User));
-                    asset.EditedOn = DateTime.Now;
                     asset.Version += Convert.ToDecimal(0.01);
+                    asset.EditedBy = _userManager.GetUserName(User);
+                    asset.EditedOn = DateTime.Now;
                     asset.ExportFilePath = string.Empty;
 
-                    if (asset.Status == Asset.AssetStatus.Approved)
+                    if (asset.Status == AssetStatus.Approved)
                     {
                         using (var transaction = _context.Database.BeginTransaction())
                         {
                             _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Asset ON;");
                             asset.Id = _context.Asset.Max(m => m.Id) + 1;
-                            asset.Status = Asset.AssetStatus.Draft;
+                            asset.Status = AssetStatus.Draft;
                             asset.ApprovedBy = null;
                             asset.ApprovedOn = null;
                             asset.GeneratedFrom = id.ToString();
@@ -228,14 +260,14 @@ namespace OpenQMS.Controllers
                             transaction.Commit();
                         }
 
-                        Asset asset1 = await _context.Asset.FirstOrDefaultAsync(m => m.Id == id);
+                        Asset? asset1 = await _context.Asset.FirstOrDefaultAsync(m => m.Id == id);
                         asset1.IsLocked = true;
                         _context.Update(asset1);
                         _context.SaveChanges();
                     }
                     else
                     {
-                        asset.Status = Asset.AssetStatus.Draft;
+                        asset.Status = AssetStatus.Draft;
                         _context.Update(asset);
                         await _context.SaveChangesAsync();
                     }
@@ -251,7 +283,6 @@ namespace OpenQMS.Controllers
                         throw;
                     }
                 }
-
                 return RedirectToAction(nameof(Index));
             }
 
@@ -271,8 +302,6 @@ namespace OpenQMS.Controllers
                 .Include(p => p.Changes)
                 .Include(p => p.Deviations)
                 .Include(p => p.Capas)
-                .Include(p => p.EditedByUser)
-                .Include(p => p.ApprovedByUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (asset == null)
@@ -280,7 +309,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            if (asset.Status != Asset.AssetStatus.Draft)
+            if (asset.Status != AssetStatus.Draft)
             {
                 return Forbid();
             }
@@ -305,7 +334,7 @@ namespace OpenQMS.Controllers
                 .Include(p => p.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (asset.Status != Asset.AssetStatus.Draft)
+            if (asset.Status != AssetStatus.Draft)
             {
                 return Forbid();
             }
@@ -323,7 +352,7 @@ namespace OpenQMS.Controllers
         {
             var assets = _context.Asset.ToList();
             var dataSets = new List<PoliciesChartViewModel>();
-            var statusList = Enum.GetValues(typeof(Asset.AssetStatus)).Cast<Asset.AssetStatus>();
+            var statusList = Enum.GetValues(typeof(AssetStatus)).Cast<AssetStatus>();
             var labels = new List<string>();
             var random = new Random();
             var dataSet = new PoliciesChartViewModel();
@@ -371,7 +400,6 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportAssetDetail(int id)
         {
-            string mimType = "";
             string path = Directory.GetCurrentDirectory() + "\\Reports\\AssetDetailReport.rdlc";
             var asset = await _context.Asset
                 .Where(x => x.Id == id)
@@ -379,8 +407,6 @@ namespace OpenQMS.Controllers
                 .Include(a => a.Changes)
                 .Include(a => a.Deviations)
                 .Include(a => a.Capas)
-                .Include(a => a.EditedByUser)
-                .Include(a => a.ApprovedByUser)
                 .FirstOrDefaultAsync();
 
             if (asset != null && string.IsNullOrEmpty(asset.ExportFilePath))
@@ -391,7 +417,6 @@ namespace OpenQMS.Controllers
                 deviationList = asset.Deviations != null ? asset.Deviations.ToList() : deviationList;
                 var capaList = new List<Capa>();
                 capaList = asset.Capas != null ? asset.Capas.ToList() : capaList;
-                //Dictionary<string, string> parameters = new Dictionary<string, string>();
                 List<ReportParameter> parameters = new List<ReportParameter>();
                 parameters.Add(new ReportParameter("AssetId", asset.AssetId));
                 parameters.Add(new ReportParameter("Name", asset.Name));
@@ -401,9 +426,9 @@ namespace OpenQMS.Controllers
                 parameters.Add(new ReportParameter("DeviationCount", deviationList != null && deviationList.Count > 0 ? "false" : "true"));
                 parameters.Add(new ReportParameter("CapaCount", capaList != null && capaList.Count > 0 ? "false" : "true"));
                 parameters.Add(new ReportParameter("Status", asset.Status.ToString()));
-                parameters.Add(new ReportParameter("EditedBy", asset.EditedByUser != null ? asset.EditedByUser.FirstName : string.Empty));
-                parameters.Add(new ReportParameter("EditedOn", asset.EditedOn != null ? asset.EditedOn.ToShortDateString() : string.Empty));
-                parameters.Add(new ReportParameter("ApprovedBy", asset.ApprovedByUser != null ? asset.ApprovedByUser.FirstName : string.Empty));
+                parameters.Add(new ReportParameter("EditedBy", asset.EditedBy != null ? asset.EditedBy : string.Empty));
+                parameters.Add(new ReportParameter("EditedOn", asset.EditedOn.ToShortDateString()));
+                parameters.Add(new ReportParameter("ApprovedBy", asset.ApprovedBy != null ? asset.ApprovedBy : string.Empty));
                 parameters.Add(new ReportParameter("ApprovedOn", asset.ApprovedOn != null ? asset.ApprovedOn.Value.ToShortDateString() : string.Empty));
                 LocalReport localReport = new LocalReport();
                 localReport.ReportPath = path;
@@ -411,59 +436,62 @@ namespace OpenQMS.Controllers
                 localReport.DataSources.Add(new ReportDataSource("Deviation", deviationList));
                 localReport.DataSources.Add(new ReportDataSource("CAPA", capaList));
                 localReport.SetParameters(parameters);
-                //localReport.AddDataSource("CAPA", capaList);
-                //localReport.AddDataSource("Change", changeList);
-                //localReport.AddDataSource("Deviation", deviationList);
-                //int ext = (int)(DateTime.Now.Ticks >> 10);
-                //var result = localReport.Execute(RenderType.Pdf, ext, parameters, mimType);
                 var result = localReport.Render("PDF");
 
+                //**Export details as signed pdf**
                 var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"AssetDetail-{asset.Id}.pdf");
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await stream.WriteAsync(result);
-                    }
-                }
-
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
                 asset.ExportFilePath = filePath;
-
-                if (asset.Status == Asset.AssetStatus.Approved || asset.Status == Asset.AssetStatus.Obsolete)
-                {
-                    asset.ExportFilePath = Helper.SignPDF(asset.ExportFilePath);
-                }
+                //if (asset.Status == Asset.AssetStatus.Approved || asset.Status == Asset.AssetStatus.Obsolete)
+                //{
+                //    asset.ExportFilePath = Helper.SignPDF(asset.ExportFilePath);
+                //}
 
                 _context.Update(asset);
                 await _context.SaveChangesAsync();
-            }
 
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(asset.ExportFilePath, FileMode.Open))
+                return File(result, "application/pdf", "AssetDetail.pdf");
+            }
+            else
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
 
-            return File(memory, "application/pdf", "AssetDetail.pdf");
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(asset.ExportFilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+
+            //return File(memory, "application/pdf", "AssetDetail.pdf");
         }
 
         public ActionResult ExportDetailInCSV(int id)
         {
-            Asset asset = _context.Asset.Where(x => x.Id == id).Include(x => x.EditedByUser).Include(x => x.ApprovedByUser).FirstOrDefault();
+            Asset? asset = _context.Asset.Where(x => x.Id == id).Include(x => x.Process).FirstOrDefault();
+
+            if (asset == null)
+            {
+                return NotFound();
+            }
 
             var builder = new StringBuilder();
             builder.AppendLine("Asset Id,Name,Description,Process,Version,Status,Edited By,Edited On,Approved By,Approved On");
-            builder.AppendLine($"{asset.AssetId},{asset.Name},{asset.Description},{(asset.Process != null ? asset.Process.Name : String.Empty)},{asset.Version},{asset.Status},{(asset.EditedByUser != null ? asset.EditedByUser.FirstName : String.Empty)},{(asset.EditedByUser != null ? asset.EditedOn.ToShortDateString() : String.Empty)},{(asset.ApprovedByUser != null ? asset.ApprovedByUser.FirstName : String.Empty)},{(asset.ApprovedByUser != null ? asset.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
+            builder.AppendLine($"{asset.AssetId},{asset.Name},{asset.Description},{(asset.Process != null ? asset.Process.Name : String.Empty)},{asset.Version},{asset.Status},{(asset.EditedBy != null ? asset.EditedBy : String.Empty)},{asset.EditedOn.ToShortDateString()},{(asset.ApprovedBy != null ? asset.ApprovedBy : String.Empty)},{(asset.ApprovedOn != null ? asset.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
 
             return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", "Asset.csv");
         }

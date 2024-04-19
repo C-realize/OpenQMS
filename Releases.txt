@@ -1,0 +1,8 @@
+Release 1.1.0
+- Enable document files to be saved in the database
+- Addition of a Training Attendance Report and a Training Certificate Report
+- Changing the license to GNU AFFERO GENERAL PUBLIC LICENSE version 3 to be compatible with other third party components
+- Minor fixes/uniformizations
+
+Release 1.0.0
+- First release

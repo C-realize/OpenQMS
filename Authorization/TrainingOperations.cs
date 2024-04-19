@@ -1,4 +1,4 @@
-﻿@*
+﻿/*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
 Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
 
@@ -18,13 +18,23 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see http://www.gnu.org/licenses/.
-*@
+*/
 
-@{
-    ViewData["Title"] = "Under Development";
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+
+namespace OpenQMS.Authorization
+{
+    public class TrainingOperations
+    {
+        public static OperationAuthorizationRequirement Create =
+          new OperationAuthorizationRequirement { Name = Constants.CreateOperationName };
+        public static OperationAuthorizationRequirement Read =
+          new OperationAuthorizationRequirement { Name = Constants.ReadOperationName };
+        public static OperationAuthorizationRequirement Update =
+          new OperationAuthorizationRequirement { Name = Constants.UpdateOperationName };
+        public static OperationAuthorizationRequirement Delete =
+          new OperationAuthorizationRequirement { Name = Constants.DeleteOperationName };
+        public static OperationAuthorizationRequirement Complete =
+          new OperationAuthorizationRequirement { Name = Constants.CompleteOperationName };
+    }
 }
-
-<h1>@ViewData["Title"]</h1>
-
-<p>We are currently working on this feature. Thank you for your patience.</p>
-<a href="https://www.c-realize.com">C-realize IT Services</a>

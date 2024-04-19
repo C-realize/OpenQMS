@@ -27,13 +27,12 @@ using OpenQMS.Models;
 
 namespace OpenQMS.Authorization
 {
-    public class AuthorAuthorizationHandler
-                : AuthorizationHandler<OperationAuthorizationRequirement, AppDocument>
+    public class TraineeAuthorizationHandler
+                : AuthorizationHandler<OperationAuthorizationRequirement, Training>
     {
         UserManager<AppUser> _userManager;
 
-        public AuthorAuthorizationHandler(UserManager<AppUser>
-            userManager)
+        public TraineeAuthorizationHandler(UserManager<AppUser> userManager)
         {
             _userManager = userManager;
         }
@@ -41,7 +40,7 @@ namespace OpenQMS.Authorization
         protected override Task
             HandleRequirementAsync(AuthorizationHandlerContext context,
                                    OperationAuthorizationRequirement requirement,
-                                   AppDocument resource)
+                                   Training resource)
         {
             if (context.User == null || resource == null)
             {
@@ -49,6 +48,7 @@ namespace OpenQMS.Authorization
             }
 
             // If not asking for CRUD permission, return.
+
             if (requirement.Name != Constants.CreateOperationName &&
                 requirement.Name != Constants.ReadOperationName &&
                 requirement.Name != Constants.UpdateOperationName &&
@@ -57,9 +57,12 @@ namespace OpenQMS.Authorization
                 return Task.CompletedTask;
             }
 
-            if (resource.AuthoredBy == _userManager.GetUserName(context.User))
+            foreach (var trainee in resource.Trainees)
             {
-                context.Succeed(requirement);
+                if(trainee.Trainee.UserName == _userManager.GetUserName(context.User))
+                {
+                    context.Succeed(requirement);
+                }
             }
 
             return Task.CompletedTask;

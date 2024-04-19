@@ -1,22 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿/*
+This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
+Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
+
+AGPL:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Reporting.NETCore;
-using Microsoft.ReportingServices.Interfaces;
-using NuGet.ContentModel;
 using OpenQMS.Authorization;
 using OpenQMS.Data;
 using OpenQMS.Models;
 using OpenQMS.Models.ViewModels;
-using OpenQMS.Services;
-using Org.BouncyCastle.Asn1.X509;
+//using OpenQMS.Services;
+using static OpenQMS.Models.Product;
 
 namespace OpenQMS.Controllers
 {
@@ -25,8 +39,12 @@ namespace OpenQMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-
-        public ProductsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public ProductsController
+            (
+                ApplicationDbContext context, 
+                UserManager<AppUser> userManager, 
+                SignInManager<AppUser> signInManager
+            )
         {
             _context = context;
             _userManager = userManager;
@@ -34,10 +52,10 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Product.Include(x => x.EditedByUser).Include(a => a.ApprovedByUser);
-            return View(await applicationDbContext.ToListAsync());
+            var productsList = await _context.Product.ToListAsync();
+            return View(productsList);
         }
 
         // GET: Products/Details/5
@@ -49,12 +67,9 @@ namespace OpenQMS.Controllers
             }
 
             var product = await _context.Product
-                .Include(a => a.EditedByUser)
-                .Include(a => a.ApprovedByUser)
                 .Include(a => a.Changes)
-                //Should be Deviations
-                .Include(a => a.Deviation)
-                .Include(a => a.Capa)
+                .Include(a => a.Deviations)
+                .Include(a => a.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (product == null)
@@ -84,7 +99,7 @@ namespace OpenQMS.Controllers
 
                 var userSigning = await _userManager.FindByEmailAsync(InputEmail);
                 var loggedUser = _userManager.GetUserName(User);
-                if (userSigning.UserName != loggedUser)
+                if ((userSigning == null) || (userSigning.UserName != loggedUser))
                 {
                     return Forbid();
                 }
@@ -95,19 +110,19 @@ namespace OpenQMS.Controllers
                     return Forbid();
                 }
 
-                if (product.Status == Product.ProductStatus.Draft)
+                if (product.Status == ProductStatus.Draft)
                 {
                     product.Version = Decimal.ToInt32(product.Version) + 1;
-                    product.ApprovedBy = Convert.ToInt32(_userManager.GetUserId(User));
+                    product.ApprovedBy = _userManager.GetUserName(User);
                     product.ApprovedOn = DateTime.Now;
-                    product.Status = Product.ProductStatus.Approved;
+                    product.Status = ProductStatus.Approved;
                     product.ExportFilePath = String.Empty;
 
                     if (product.GeneratedFrom != null && !string.IsNullOrEmpty(product.GeneratedFrom))
                     {
                         var oldProduct = await _context.Product.FirstOrDefaultAsync(m => m.Id.ToString().Equals(product.GeneratedFrom));
 
-                        oldProduct.Status = Product.ProductStatus.Obsolete;
+                        oldProduct.Status = ProductStatus.Obsolete;
                         product.ExportFilePath = String.Empty;
                         _context.Product.Update(oldProduct);
                     }
@@ -159,7 +174,7 @@ namespace OpenQMS.Controllers
 
                     prevId = prevId > 0 ? prevId + 1 : 1;
                     product.ProductId = $"PRD-{prevId.ToString().PadLeft(2, '0')}";
-                    product.EditedBy = Convert.ToInt32(_userManager.GetUserId(User));
+                    product.EditedBy = _userManager.GetUserName(User);
                     product.EditedOn = DateTime.Now;
                     product.Version = Convert.ToDecimal(0.01);
                     product.IsLocked = false;
@@ -191,6 +206,11 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
+            if (product.IsLocked)
+            {
+                return Forbid();
+            }
+
             return View(product);
         }
 
@@ -215,18 +235,18 @@ namespace OpenQMS.Controllers
                         return Forbid();
                     }
 
-                    product.EditedBy = Convert.ToInt32(_userManager.GetUserId(User));
-                    product.EditedOn = DateTime.Now;
                     product.Version += Convert.ToDecimal(0.01);
+                    product.EditedBy = _userManager.GetUserName(User);
+                    product.EditedOn = DateTime.Now;
                     product.ExportFilePath = string.Empty;
 
-                    if (product.Status == Product.ProductStatus.Approved)
+                    if (product.Status == ProductStatus.Approved)
                     {
                         using (var transaction = _context.Database.BeginTransaction())
                         {
                             _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Product ON;");
                             product.Id = _context.Product.Max(m => m.Id) + 1;
-                            product.Status = Product.ProductStatus.Draft;
+                            product.Status = ProductStatus.Draft;
                             product.ApprovedBy = null;
                             product.ApprovedOn = null;
                             product.GeneratedFrom = id.ToString();
@@ -237,14 +257,14 @@ namespace OpenQMS.Controllers
                             transaction.Commit();
                         }
 
-                        Product product1 = await _context.Product.FirstOrDefaultAsync(m => m.Id == id);
+                        Product? product1 = await _context.Product.FirstOrDefaultAsync(m => m.Id == id);
                         product1.IsLocked = true;
                         _context.Update(product1);
                         _context.SaveChanges();
                     }
                     else
                     {
-                        product.Status = Product.ProductStatus.Draft;
+                        product.Status = ProductStatus.Draft;
                         _context.Update(product);
                         await _context.SaveChangesAsync();
                     }
@@ -275,10 +295,8 @@ namespace OpenQMS.Controllers
 
             var product = await _context.Product
                 .Include(p => p.Changes)
-                .Include(p => p.Deviation)
-                .Include(p => p.Capa)
-                .Include(p => p.EditedByUser)
-                .Include(p => p.ApprovedByUser)
+                .Include(p => p.Deviations)
+                .Include(p => p.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (product == null)
@@ -286,7 +304,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            if (product.Status != Product.ProductStatus.Draft)
+            if (product.Status != ProductStatus.Draft)
             {
                 return Forbid();
             }
@@ -306,18 +324,18 @@ namespace OpenQMS.Controllers
 
             var product = await _context.Product
                 .Include(p => p.Changes)
-                .Include(p => p.Deviation)
-                .Include(p => p.Capa)
+                .Include(p => p.Deviations)
+                .Include(p => p.Capas)
                 .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (product.Status != Product.ProductStatus.Draft)
-            {
-                return Forbid();
-            }
 
             if (product != null)
             {
                 _context.Product.Remove(product);
+            }
+
+            if (product.Status != ProductStatus.Draft)
+            {
+                return Forbid();
             }
 
             await _context.SaveChangesAsync();
@@ -328,7 +346,7 @@ namespace OpenQMS.Controllers
         {
             var products = _context.Product.ToList();
             var dataSets = new List<PoliciesChartViewModel>();
-            var statusList = Enum.GetValues(typeof(Product.ProductStatus)).Cast<Product.ProductStatus>();
+            var statusList = Enum.GetValues(typeof(ProductStatus)).Cast<ProductStatus>();
             var labels = new List<string>();
             var random = new Random();
             var dataSet = new PoliciesChartViewModel();
@@ -389,109 +407,101 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportProductDetail(int id)
         {
-            string mimType = "";
             string path = Directory.GetCurrentDirectory() + "\\Reports\\ProductDetailReport.rdlc";
             var product = await _context.Product
                 .Where(x => x.Id == id)
                 .Include(a => a.Processes)
                 .Include(a => a.Changes)
-                .Include(a => a.Deviation)
-                .Include(a => a.Capa)
-                .Include(a => a.EditedByUser)
-                .Include(a => a.ApprovedByUser)
+                .Include(a => a.Deviations)
+                .Include(a => a.Capas)
                 .FirstOrDefaultAsync();
 
-            if (product != null && string.IsNullOrEmpty(product.ExportFilePath))
+            if (product != null /*&& string.IsNullOrEmpty(product.ExportFilePath)*/)
             {
-                var processList = new List<Process>();
+                var processList = new List<Models.Process>();
                 processList = product.Processes != null ? product.Processes.ToList() : processList;
                 var changeList = new List<Change>();
                 changeList = product.Changes != null ? product.Changes.ToList() : changeList;
                 var deviationList = new List<Deviation>();
-                deviationList = product.Deviation != null ? product.Deviation.ToList() : deviationList;
+                deviationList = product.Deviations != null ? product.Deviations.ToList() : deviationList;
                 var capaList = new List<Capa>();
-                capaList = product.Capa != null ? product.Capa.ToList() : capaList;
-                List<ReportParameter> parameters1 = new List<ReportParameter>();
-                //Dictionary<string, string> parameters = new Dictionary<string, string>();
-                parameters1.Add(new ReportParameter("ProductId", product.ProductId));
-                parameters1.Add(new ReportParameter("Name", product.Name));
-                parameters1.Add(new ReportParameter("Description", product.Description));
-                parameters1.Add(new ReportParameter("ProcessCount", processList != null && processList.Count > 0 ? "false" : "true"));
-                parameters1.Add(new ReportParameter("ChangeCount", changeList != null && changeList.Count > 0 ? "false" : "true"));
-                parameters1.Add(new ReportParameter("DeviationCount", deviationList != null && deviationList.Count > 0 ? "false" : "true"));
-                parameters1.Add(new ReportParameter("CapaCount", capaList != null && capaList.Count > 0 ? "false" : "true"));
-                parameters1.Add(new ReportParameter("Status", product.Status.ToString()));
-                parameters1.Add(new ReportParameter("EditedBy", product.EditedByUser != null ? product.EditedByUser.FirstName : string.Empty));
-                parameters1.Add(new ReportParameter("EditedOn", product.EditedOn != null ? product.EditedOn.ToShortDateString() : string.Empty));
-                parameters1.Add(new ReportParameter("ApprovedBy", product.ApprovedByUser != null ? product.ApprovedByUser.FirstName : string.Empty));
-                parameters1.Add(new ReportParameter("ApprovedOn", product.ApprovedOn != null ? product.ApprovedOn.Value.ToShortDateString() : string.Empty));
+                capaList = product.Capas != null ? product.Capas.ToList() : capaList;
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter("ProductId", product.ProductId));
+                parameters.Add(new ReportParameter("Name", product.Name));
+                parameters.Add(new ReportParameter("Description", product.Description));
+                parameters.Add(new ReportParameter("ProcessCount", processList != null && processList.Count > 0 ? "false" : "true"));
+                parameters.Add(new ReportParameter("ChangeCount", changeList != null && changeList.Count > 0 ? "false" : "true"));
+                parameters.Add(new ReportParameter("DeviationCount", deviationList != null && deviationList.Count > 0 ? "false" : "true"));
+                parameters.Add(new ReportParameter("CapaCount", capaList != null && capaList.Count > 0 ? "false" : "true"));
+                parameters.Add(new ReportParameter("Status", product.Status.ToString()));
+                parameters.Add(new ReportParameter("EditedBy", product.EditedBy != null ? product.EditedBy : string.Empty));
+                parameters.Add(new ReportParameter("EditedOn", product.EditedOn.ToShortDateString()));
+                parameters.Add(new ReportParameter("ApprovedBy", product.ApprovedBy != null ? product.ApprovedBy : string.Empty));
+                parameters.Add(new ReportParameter("ApprovedOn", product.ApprovedOn != null ? product.ApprovedOn.Value.ToShortDateString() : string.Empty));
                 LocalReport localReport = new LocalReport();
                 localReport.ReportPath = path;
                 localReport.DataSources.Add(new ReportDataSource("Process", processList));
                 localReport.DataSources.Add(new ReportDataSource("Change", changeList));
                 localReport.DataSources.Add(new ReportDataSource("Deviation", deviationList));
                 localReport.DataSources.Add(new ReportDataSource("CAPA", capaList));
-                localReport.SetParameters(parameters1);
-                //localReport.AddDataSource("CAPA", capaList);
-                //localReport.AddDataSource("Change", changeList);
-                //localReport.AddDataSource("Deviation", deviationList);
-                //int ext = (int)(DateTime.Now.Ticks >> 10);
-                try
-                {
-                    var result = localReport.Render("PDF");
+                localReport.SetParameters(parameters);
+                var result = localReport.Render("PDF");
 
-                    var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
-                    bool basePathExists = System.IO.Directory.Exists(basePath);
-                    if (!basePathExists) Directory.CreateDirectory(basePath);
-                    var filePath = Path.Combine(basePath, $"ProductDetail-{product.Id}.pdf");
+                //**Export details as signed pdf**
+                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                bool basePathExists = System.IO.Directory.Exists(basePath);
+                if (!basePathExists) Directory.CreateDirectory(basePath);
+                var filePath = Path.Combine(basePath, $"ProductDetail-{product.Id}.pdf");
+                //if (System.IO.File.Exists(filePath))
+                //{
+                //    System.IO.File.Delete(filePath);
+                //}
+                //if (!System.IO.File.Exists(filePath))
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await stream.WriteAsync(result);
+                //    }
+                //}
+                product.ExportFilePath = filePath;
+                //if (product.Status == ProductStatus.Approved || product.Status == ProductStatus.Obsolete)
+                //{
+                //    product.ExportFilePath = Helper.SignPDF(product.ExportFilePath);
+                //}
 
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
+                _context.Update(product);
+                await _context.SaveChangesAsync();
 
-                    if (!System.IO.File.Exists(filePath))
-                    {
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await stream.WriteAsync(result);
-                        }
-                    }
-
-                    product.ExportFilePath = filePath;
-
-                    if (product.Status == Product.ProductStatus.Approved || product.Status == Product.ProductStatus.Obsolete)
-                    {
-                        product.ExportFilePath = Helper.SignPDF(product.ExportFilePath);
-                    }
-
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-
-                }
-                
+                return File(result, "application/pdf", "ProductDetail.pdf");
             }
-
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(product.ExportFilePath, FileMode.Open))
+            else
             {
-                await stream.CopyToAsync(memory);
+                return NotFound();
             }
-            memory.Position = 0;
 
-            return File(memory, "application/pdf", "ProductDetail.pdf");
+            //var memory = new MemoryStream();
+            //using (var stream = new FileStream(product.ExportFilePath, FileMode.Open))
+            //{
+            //    await stream.CopyToAsync(memory);
+            //}
+            //memory.Position = 0;
+
+            //return File(memory, "application/pdf", "ProductDetail.pdf");
         }
 
         public ActionResult ExportDetailInCSV(int id)
         {
-            Product product = _context.Product.Where(x => x.Id == id).Include(x => x.EditedByUser).Include(x => x.ApprovedByUser).FirstOrDefault();
+            Product? product = _context.Product.Where(x => x.Id == id).FirstOrDefault();
+
+            if (product == null)
+            {
+                return NotFound();
+            }
 
             var builder = new StringBuilder();
             builder.AppendLine("Product Id,Name,Description,Version,Status,Edited By,Edited On,Approved By,Approved On");
-            builder.AppendLine($"{product.ProductId},{product.Name},{product.Description},{product.Version},{product.Status},{(product.EditedByUser != null ? product.EditedByUser.FirstName : String.Empty)},{(product.EditedByUser != null ? product.EditedOn.ToShortDateString() : String.Empty)},{(product.ApprovedByUser != null ? product.ApprovedByUser.FirstName : String.Empty)},{(product.ApprovedByUser != null ? product.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
+            builder.AppendLine($"{product.ProductId},{product.Name},{product.Description},{product.Version},{product.Status},{(product.EditedBy != null ? product.EditedBy : String.Empty)},{product.EditedOn.ToShortDateString()},{(product.ApprovedBy != null ? product.ApprovedBy : String.Empty)},{(product.ApprovedOn != null ? product.ApprovedOn.Value.ToShortDateString() : String.Empty)}");
 
             return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", "Product.csv");
         }

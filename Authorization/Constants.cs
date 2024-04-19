@@ -1,4 +1,4 @@
-﻿@*
+﻿/*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
 Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
 
@@ -18,13 +18,22 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see http://www.gnu.org/licenses/.
-*@
+*/
 
-@{
-    ViewData["Title"] = "Under Development";
+namespace OpenQMS.Authorization
+{
+    public class Constants
+    {
+        public static readonly string CreateOperationName = "Create";
+        public static readonly string ReadOperationName = "Read";
+        public static readonly string UpdateOperationName = "Update";
+        public static readonly string DeleteOperationName = "Delete";
+
+        public static readonly string ApproveOperationName = "Approve";
+        public static readonly string RejectOperationName = "Reject";
+        public static readonly string CompleteOperationName = "Complete";
+
+        public static readonly string AdministratorsRole = "Administrator";
+        public static readonly string ManagersRole = "Manager";
+    }
 }
-
-<h1>@ViewData["Title"]</h1>
-
-<p>We are currently working on this feature. Thank you for your patience.</p>
-<a href="https://www.c-realize.com">C-realize IT Services</a>
