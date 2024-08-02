@@ -107,7 +107,7 @@ namespace OpenQMS.Controllers
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(userSigning.UserName, InputPassword, isPersistent: false, lockoutOnFailure: false);
-                if (!result.Succeeded)
+                if (!(result.Succeeded || result.RequiresTwoFactor))
                 {
                     return Forbid();
                 }
@@ -263,7 +263,7 @@ namespace OpenQMS.Controllers
                         Asset? asset1 = await _context.Asset.FirstOrDefaultAsync(m => m.Id == id);
                         asset1.IsLocked = true;
                         _context.Update(asset1);
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
                     }
                     else
                     {
@@ -400,7 +400,7 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportAssetDetail(int id)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Reports\\AssetDetailReport.rdlc";
+            string path = Directory.GetCurrentDirectory() + "/Reports/AssetDetailReport.rdlc";
             var asset = await _context.Asset
                 .Where(x => x.Id == id)
                 .Include(a => a.Process)
@@ -439,7 +439,7 @@ namespace OpenQMS.Controllers
                 var result = localReport.Render("PDF");
 
                 //**Export details as signed pdf**
-                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "/Files/");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"AssetDetail-{asset.Id}.pdf");

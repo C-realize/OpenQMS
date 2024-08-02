@@ -109,7 +109,7 @@ namespace OpenQMS.Controllers
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(userSigning.UserName, InputPassword, isPersistent: false, lockoutOnFailure: false);
-                if (!result.Succeeded)
+                if (!(result.Succeeded || result.RequiresTwoFactor))
                 {
                     return Forbid();
                 }
@@ -267,7 +267,7 @@ namespace OpenQMS.Controllers
                         Process? process1 = await _context.Process.FirstOrDefaultAsync(m => m.Id == id);
                         process1.IsLocked = true;
                         _context.Update(process1);
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
                     }
                     else
                     {
@@ -405,7 +405,7 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportProcessDetail(int id)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Reports\\ProcessDetailReport.rdlc";
+            string path = Directory.GetCurrentDirectory() + "/Reports/ProcessDetailReport.rdlc";
             var process = await _context.Process
                 .Where(x => x.Id == id)
                 .Include(a => a.Product)
@@ -454,7 +454,7 @@ namespace OpenQMS.Controllers
                 var result = localReport.Render("PDF");
 
                 //**Export details as signed pdf**
-                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "/Files/");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var fileName = Path.GetFileNameWithoutExtension("ProcessDetail.pdf");

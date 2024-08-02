@@ -46,19 +46,21 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <link href="~/lib/datatables/datatables/css/jquery.datatables.min.css" rel="stylesheet" />
-    <link href="~/lib/datatables/buttons/css/buttons.datatables.min.css" rel="stylesheet" />
+    <link href="~/lib/DataTables/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="~/lib/DataTables/Buttons/css/buttons.dataTables.min.css" rel="stylesheet" />
 
-    <script src="~/lib/datatables/datatables/js/jquery.datatables.min.js"></script>
-    <script src="~/lib/datatables/buttons/js/datatables.buttons.min.js"></script>
-    <script src="~/lib/datatables/buttons/js/buttons.html5.min.js"></script>
-    <script src="~/lib/datatables/buttons/js/buttons.print.min.js"></script>
-    <script src="~/lib/datatables/buttons/js/buttons.colvis.min.js"></script>
-    <script src="~/lib/datatables/jszip/jszip.min.js"></script>
-    <script src="~/lib/datatables/pdfmake/pdfmake.min.js"></script>
-    <script src="~/lib/datatables/pdfmake/vfs_fonts.js"></script>
+    <script src="~/lib/DataTables/DataTables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/DataTables/Buttons/js/dataTables.buttons.min.js"></script>
+    <script src="~/lib/DataTables/Buttons/js/buttons.html5.min.js"></script>
+    <script src="~/lib/DataTables/Buttons/js/buttons.print.min.js"></script>
+    <script src="~/lib/DataTables/Buttons/js/buttons.colVis.min.js"></script>
+    <script src="~/lib/DataTables/JSZip/jszip.min.js"></script>
+    <script src="~/lib/DataTables/pdfmake/pdfmake.min.js"></script>
+    <script src="~/lib/DataTables/pdfmake/vfs_fonts.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/lib/ChartJs/chart.min.js"></script>
+
+@*     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+ *@    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using OpenQMS.Models;
 namespace OpenQMS.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class LoginWithRecoveryCodeModel : PageModel
     {
         private readonly SignInManager<AppUser> _signInManager;

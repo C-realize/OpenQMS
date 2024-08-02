@@ -14,6 +14,7 @@ using OpenQMS.Models;
 
 namespace OpenQMS.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class LoginWith2faModel : PageModel
     {
         private readonly SignInManager<AppUser> _signInManager;

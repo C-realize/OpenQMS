@@ -20,10 +20,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
+using iText.Bouncycastle.Crypto;
+using iText.Bouncycastle.X509;
 using iText.Kernel.Pdf;
 using iText.Signatures;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Pkcs;
+//using Org.BouncyCastle.X509;
 using static iText.Signatures.PdfSigner;
 
 namespace OpenQMS.Services
@@ -43,10 +46,11 @@ namespace OpenQMS.Services
             MemoryStream outputStream = new MemoryStream();
             PdfSigner signer = new PdfSigner(reader, /*file*/outputStream, new StampingProperties());
 
-            string KEYSTORE = Directory.GetCurrentDirectory() + "\\cert.pfx";
+            string KEYSTORE = Directory.GetCurrentDirectory() + "/cert.pfx";
             char[] PASSWORD = "asdzxc".ToCharArray();
 
-            Pkcs12Store pk12 = new Pkcs12Store(new FileStream(KEYSTORE, FileMode.Open, FileAccess.Read), PASSWORD);
+            Pkcs12Store pk12 = new Pkcs12StoreBuilder().Build();
+            pk12.Load(new FileStream(KEYSTORE, FileMode.Open, FileAccess.Read), PASSWORD);
             string alias = null;
             foreach (var a in pk12.Aliases)
             {
@@ -57,10 +61,10 @@ namespace OpenQMS.Services
             ICipherParameters pk = pk12.GetKey(alias).Key;
 
             X509CertificateEntry[] ce = pk12.GetCertificateChain(alias);
-            Org.BouncyCastle.X509.X509Certificate[] chain = new Org.BouncyCastle.X509.X509Certificate[ce.Length];
+            X509CertificateBC[] chain = new X509CertificateBC[ce.Length];
             for (int k = 0; k < ce.Length; ++k)
             {
-                chain[k] = ce[k].Certificate;
+                chain[k] = new X509CertificateBC(ce[k].Certificate);
             }
 
             // Create the signature appearance
@@ -74,7 +78,7 @@ namespace OpenQMS.Services
                 .SetLayer2FontSize(16);
             signer.SetFieldName("DigitalSignature");
 
-            IExternalSignature pks = new PrivateKeySignature(pk, DigestAlgorithms.SHA256);
+            IExternalSignature pks = new PrivateKeySignature(new PrivateKeyBC(pk), DigestAlgorithms.SHA256);
             signer.SignDetached(pks, chain, null, null, null, 0, CryptoStandard.CMS);
 
             byte[] signedFile = outputStream.ToArray();

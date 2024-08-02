@@ -158,7 +158,7 @@ namespace OpenQMS.Controllers
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(userSigning.UserName, InputPassword, isPersistent: false, lockoutOnFailure: false);
-                if (!result.Succeeded)
+                if (!(result.Succeeded || result.RequiresTwoFactor))
                 {
                     return Forbid();
                 }
@@ -485,7 +485,7 @@ namespace OpenQMS.Controllers
                         AppDocument document1 = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == id);
                         document1.IsLocked = true;
                         _context.Update(document1);
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
                     }
                     else
                     {

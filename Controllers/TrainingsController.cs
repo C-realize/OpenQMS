@@ -471,7 +471,7 @@ namespace OpenQMS.Controllers
 
         public async Task<IActionResult> ExportTrainingCertificate(int id)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Reports\\TrainingCertificateReport.rdl";
+            string path = Directory.GetCurrentDirectory() + "/Reports/TrainingCertificateReport.rdl";
             var training = await _context.Training
                 .Include(x => x.CompletedByUser)
                 .Include(s => s.Trainees).ThenInclude(t => t.Trainee)
@@ -536,7 +536,7 @@ namespace OpenQMS.Controllers
         [Authorize(Roles = "Administrator,Manager")]
         public async Task<IActionResult> ExportTrainingAttendance(int id)
         {
-            string path = Directory.GetCurrentDirectory() + "\\Reports\\TrainingAttendanceReport.rdl";
+            string path = Directory.GetCurrentDirectory() + "/Reports/TrainingAttendanceReport.rdl";
             var training = await _context.Training
                 .Include(x => x.CompletedByUser)
                 .Include(s => s.Trainees).ThenInclude(t => t.Trainee)

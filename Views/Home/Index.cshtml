@@ -101,6 +101,96 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             });
 
             $.ajax({
+                url: "/Processes/GetDocuments",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    var ctx = document.getElementById("ProcessPieChart");
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            datasets: data.dataSet,
+                            labels: data.labels
+                        },
+                        options: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    fontSize: 14,
+                                    fontColor: '#000'
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function (e, f, g) {
+                    console.log(e, f, g);
+                }
+            });
+
+            $.ajax({
+                url: "/Assets/GetDocuments",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    var ctx = document.getElementById("AssetPieChart");
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            datasets: data.dataSet,
+                            labels: data.labels
+                        },
+                        options: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    fontSize: 14,
+                                    fontColor: '#000'
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function (e, f, g) {
+                    console.log(e, f, g);
+                }
+            });
+
+            $.ajax({
+                url: "/Materials/GetDocuments",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    var ctx = document.getElementById("MaterialPieChart");
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            datasets: data.dataSet,
+                            labels: data.labels
+                        },
+                        options: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    fontSize: 14,
+                                    fontColor: '#000'
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function (e, f, g) {
+                    console.log(e, f, g);
+                }
+            });
+
+            $.ajax({
                 url: "/Deviations/GetDocuments",
                 type: "GET",
                 dataType: 'json',
@@ -249,96 +339,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                     console.log(e, f, g);
                 }
             });
-
-            $.ajax({
-                url: "/Processes/GetDocuments",
-                type: "GET",
-                dataType: 'json',
-                success: function (data) {
-                    var ctx = document.getElementById("ProcessPieChart");
-                    var myChart = new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            datasets: data.dataSet,
-                            labels: data.labels
-                        },
-                        options: {
-                            legend: {
-                                display: true,
-                                position: 'bottom',
-                                labels: {
-                                    boxWidth: 10,
-                                    fontSize: 14,
-                                    fontColor: '#000'
-                                }
-                            }
-                        }
-                    });
-                },
-                error: function (e, f, g) {
-                    console.log(e, f, g);
-                }
-            });
-
-            $.ajax({
-                url: "/Assets/GetDocuments",
-                type: "GET",
-                dataType: 'json',
-                success: function (data) {
-                    var ctx = document.getElementById("AssetPieChart");
-                    var myChart = new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            datasets: data.dataSet,
-                            labels: data.labels
-                        },
-                        options: {
-                            legend: {
-                                display: true,
-                                position: 'bottom',
-                                labels: {
-                                    boxWidth: 10,
-                                    fontSize: 14,
-                                    fontColor: '#000'
-                                }
-                            }
-                        }
-                    });
-                },
-                error: function (e, f, g) {
-                    console.log(e, f, g);
-                }
-            });
-
-            $.ajax({
-                url: "/Materials/GetDocuments",
-                type: "GET",
-                dataType: 'json',
-                success: function (data) {
-                    var ctx = document.getElementById("MaterialPieChart");
-                    var myChart = new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            datasets: data.dataSet,
-                            labels: data.labels
-                        },
-                        options: {
-                            legend: {
-                                display: true,
-                                position: 'bottom',
-                                labels: {
-                                    boxWidth: 10,
-                                    fontSize: 14,
-                                    fontColor: '#000'
-                                }
-                            }
-                        }
-                    });
-                },
-                error: function (e, f, g) {
-                    console.log(e, f, g);
-                }
-            });
         });
     </script>
     }
@@ -357,10 +357,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             </div>
         </div>
         <div class="dashboard">
-            <h4>Deviations Status Chart</h4>
+            <h4>Processes Status Chart</h4>
             <div style="width:265px; border:1px solid #7F7F7F; padding-top: 10px">
                 <div>
-                    <canvas height="300" id="DeviationPieChart"></canvas>
+                    <canvas height="300" id="ProcessPieChart"></canvas>
                 </div>
             </div>
         </div>
@@ -376,18 +376,18 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     <br />
     <div class="row">
         <div class="dashboard">
-            <h4>Capas Status Chart</h4>
+            <h4>Assets Status Chart</h4>
             <div style="width:265px; border:1px solid #7F7F7F; padding-top: 10px">
                 <div>
-                    <canvas height="300" id="CapaPieChart"></canvas>
+                    <canvas height="300" id="AssetPieChart"></canvas>
                 </div>
             </div>
         </div>
         <div class="dashboard">
-            <h4>Changes Status Chart</h4>
+            <h4>Materials Status Chart</h4>
             <div style="width:265px; border:1px solid #7F7F7F; padding-top: 10px">
                 <div>
-                    <canvas height="300" id="ChangePieChart"></canvas>
+                    <canvas height="300" id="MaterialPieChart"></canvas>
                 </div>
             </div>
         </div>
@@ -403,26 +403,26 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     <br />
     <div class="row">
         <div class="dashboard">
-            <h4>Processes Status Chart</h4>
+            <h4>Changes Status Chart</h4>
             <div style="width:265px; border:1px solid #7F7F7F; padding-top: 10px">
                 <div>
-                    <canvas height="300" id="ProcessPieChart"></canvas>
+                    <canvas height="300" id="ChangePieChart"></canvas>
                 </div>
             </div>
         </div>
         <div class="dashboard">
-            <h4>Assets Status Chart</h4>
+            <h4>Deviations Status Chart</h4>
             <div style="width:265px; border:1px solid #7F7F7F; padding-top: 10px">
                 <div>
-                    <canvas height="300" id="AssetPieChart"></canvas>
+                    <canvas height="300" id="DeviationPieChart"></canvas>
                 </div>
             </div>
         </div>
         <div class="dashboard">
-            <h4>Materials Status Chart</h4>
+            <h4>Capas Status Chart</h4>
             <div style="width:265px; border:1px solid #7F7F7F; padding-top: 10px">
                 <div>
-                    <canvas height="300" id="MaterialPieChart"></canvas>
+                    <canvas height="300" id="CapaPieChart"></canvas>
                 </div>
             </div>
         </div>

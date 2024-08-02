@@ -410,7 +410,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            string path = Directory.GetCurrentDirectory() + "\\Reports\\CapaDetailReport.rdlc";
+            string path = Directory.GetCurrentDirectory() + "/Reports/CapaDetailReport.rdlc";
             var capa = await _context.Capa
                 .Where(x => x.Id == id)
                 .Include(x => x.Product)
@@ -456,7 +456,7 @@ namespace OpenQMS.Controllers
                 var result = localReport.Render("PDF");
 
                 //**Export details as signed pdf**
-                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "/Files/");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"CapaDetail-{capa.Id}.pdf");

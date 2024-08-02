@@ -403,7 +403,7 @@ namespace OpenQMS.Controllers
                 return NotFound();
             }
 
-            string path = Directory.GetCurrentDirectory() + "\\Reports\\DeviationDetailReport.rdlc";
+            string path = Directory.GetCurrentDirectory() + "/Reports/DeviationDetailReport.rdlc";
             var deviation = await _context.Deviation
                 .Where(x => x.Id == id)
                 .Include(x => x.Product)
@@ -446,7 +446,7 @@ namespace OpenQMS.Controllers
                 var result = localReport.Render("PDF");
 
                 //**Export details as signed pdf**
-                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "\\Files\\");
+                var basePath = Path.Combine(Directory.GetCurrentDirectory() + "/Files/");
                 bool basePathExists = System.IO.Directory.Exists(basePath);
                 if (!basePathExists) Directory.CreateDirectory(basePath);
                 var filePath = Path.Combine(basePath, $"DeviationDetail-{deviation.Id}.pdf");

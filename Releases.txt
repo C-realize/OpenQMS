@@ -1,3 +1,10 @@
+OpenQMS
+
+Release 1.2.0
+- Migrate from .NET 6.0 to 8.0 and iText 7 to 8
+- Switch from SQL Server database to SQLite
+- Minor fixes, code quality and style
+
 Release 1.1.0
 - Enable document files to be saved in the database
 - Addition of a Training Attendance Report and a Training Certificate Report

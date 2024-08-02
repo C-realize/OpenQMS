@@ -369,7 +369,9 @@ openqms-deployment.yaml
 openqms-service.yaml
 /docker-compose.override.yml
 /docker-compose.yml
+/docker-compose.dcproj
 /Dockerfile
 /.dockerignore
-/docker-compose.dcproj
-/Properties/ServiceDependencies/OpenQMS20220604200937 - Web Deploy/profile.arm.json
+/Migrations/SQLServer
+/OpenQMS.db
+/Properties
