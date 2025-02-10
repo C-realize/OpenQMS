@@ -372,6 +372,8 @@ openqms-service.yaml
 /docker-compose.dcproj
 /Dockerfile
 /.dockerignore
-/Migrations/SQLServer
 /OpenQMS.db
+/OpenQMS.db-shm
+/OpenQMS.db-wal
 /Properties
+/Migrations/Migrations.zip

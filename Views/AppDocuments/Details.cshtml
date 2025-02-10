@@ -1,6 +1,6 @@
 ﻿@*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -34,7 +34,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 <div>
     <dl class="row">
         <dt class="col-sm-2">
-            Id
+            @Html.DisplayNameFor(model => model.DocumentId)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.DocumentId)
@@ -58,34 +58,28 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             @Html.DisplayFor(model => model.Version)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class="col-sm-2">
-            Authored By
+            @Html.DisplayNameFor(model => model.AuthoredBy)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.AuthoredBy)
         </dd>
         <dt class="col-sm-2">
-            Authored On
+            @Html.DisplayNameFor(model => model.AuthoredOn)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.AuthoredOn)
         </dd>
         <dt class="col-sm-2">
-            Approved By
+            @Html.DisplayNameFor(model => model.ApprovedBy)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedBy)
+            @(Model.ApprovedBy ?? "-")
         </dd>
         <dt class="col-sm-2">
-            Approved On
+            @Html.DisplayNameFor(model => model.ApprovedOn)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedOn)
+            @(Model.ApprovedOn.HasValue ? Model.ApprovedOn : "-")
         </dd>
 @*         <dt class="col-sm-2">
             File Path
@@ -93,8 +87,15 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.FilePath)
         </dd>
- *@    </dl>
-    <a type="button" class="btn btn-primary" asp-action="DownloadFile" asp-route-id="@Model.Id">Download</a>
+ *@    
+         <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+    </dl>
+    <a type="button" class="col-sm-2 btn btn-primary" asp-action="DownloadFile" asp-route-id="@Model.Id">Download</a>
 </div>
 
 <br />
@@ -117,8 +118,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                         <input type="password" name="InputPassword" class="form-control" />
                     </div>
                     <br />
-                    <button type="submit" class="btn btn-xs btn-success">Approve</button>
-                    Sign pdf documents digitally with <a href="https://github.com/itext/itext-dotnet">iText&reg;</a>
+                    <button type="submit" class="col-sm-4 btn btn-xs btn-success">Approve</button>
                 </form>
             }
         }
@@ -131,7 +131,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                     <input type="hidden" name="id" value="@Model.Id" />
                     <input type="hidden" name="title" value="@Model.Title" />
                     <input type="hidden" name="status" value="Rejected" />
-                    <button type="submit" class="btn btn-xs btn-danger">Reject</button>
+                    <button type="submit" class="col-sm-4 btn btn-xs btn-danger">Reject</button>
+                    <br />
+                    Sign pdf documents digitally with <a href="https://github.com/itext/itext-dotnet">iText&reg;</a>
                 </form>
             }
         }

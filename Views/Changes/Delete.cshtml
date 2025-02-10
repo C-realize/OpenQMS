@@ -1,6 +1,6 @@
 ﻿@*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -35,7 +35,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 <div>
     <dl class="row">
         <dt class="col-sm-2">
-            Id
+            @Html.DisplayNameFor(model => model.ChangeId)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ChangeId)
@@ -54,6 +54,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             {
                 <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
             }
+            else
+            {
+                <a>-</a>
+            }
         </dd>
         <dt class="col-sm-2">
             Process
@@ -62,6 +66,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             @if (Model.Process != null)
             {
                 <a href="/Processes/Details/@Model.ProcessId">@Model.Process.Name</a>
+            }
+            else
+            {
+                <a>-</a>
             }
         </dd>
         <dt class="col-sm-2">
@@ -72,6 +80,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             {
                 <a href="/Assets/Details/@Model.AssetId">@Model.Asset.Name</a>
             }
+            else
+            {
+                <a>-</a>
+            }
         </dd>
         <dt class="col-sm-2">
             Material
@@ -81,14 +93,22 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             {
                 <a href="/Materials/Details/@Model.MaterialId">@Model.Material.Name</a>
             }
+            else
+            {
+                <a>-</a>
+            }
         </dd>
         <dt class="col-sm-2">
-            Capa
+            CAPA
         </dt>
         <dd class="col-sm-10">
             @if (Model.Capa != null)
             {
                 <a href="/Capas/Details/@Model.CapaId">@Model.Capa.Title</a>
+            }
+            else
+            {
+                <a>-</a>
             }
         </dd>
         <dt class="col-sm-2">
@@ -113,61 +133,19 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             @Html.DisplayNameFor(model => model.Assessment)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Assessment)
+            @(Model.Assessment ?? "-")
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.AssessedBy)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AssessedBy)
+            @(Model.AssessedBy ?? "-")
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.AssessedOn)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AssessedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AcceptedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AcceptedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AcceptedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AcceptedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Implementation)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Implementation)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedOn)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedBy)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedBy)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedOn)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedOn)
+            @(Model.AssessedOn.HasValue ? Model.AssessedOn : "-")
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Status)

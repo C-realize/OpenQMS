@@ -1,6 +1,6 @@
 ﻿/*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -322,7 +322,7 @@ namespace OpenQMS.Controllers
                     }
 
                     prevId = prevId > 0 ? prevId + 1 : 1;
-                    document.DocumentId = $"Doc-{prevId.ToString().PadLeft(2, '0')}";
+                    document.DocumentId = $"DOC-{prevId.ToString().PadLeft(2, '0')}";
                     document.Version = Convert.ToDecimal(0.01);
                     document.IsLocked = false;
                     document.AuthoredBy = _userManager.GetUserName(User);

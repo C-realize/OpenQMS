@@ -1,6 +1,6 @@
 ﻿@*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -35,7 +35,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav justify-content-center flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
@@ -45,6 +45,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Changes" asp-action="Index">Changes</a></li>
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Deviations" asp-action="Index">Deviations</a></li>
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Capas" asp-action="Index">CAPA</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Complaints</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Risks</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Audits</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Maintenance</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -80,6 +84,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                                 }
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Trainings" asp-action="Index">Trainings</a></li>
                             </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Reports</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Settings</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">

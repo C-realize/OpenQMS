@@ -182,7 +182,7 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppDocument");
+                    b.ToTable("AppDocument", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.AppRole", b =>
@@ -340,7 +340,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProcessId");
 
-                    b.ToTable("Asset");
+                    b.ToTable("Asset", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Capa", b =>
@@ -435,7 +435,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Capa");
+                    b.ToTable("Capa", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Change", b =>
@@ -526,7 +526,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Change");
+                    b.ToTable("Change", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Deviation", b =>
@@ -612,7 +612,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Deviation");
+                    b.ToTable("Deviation", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Material", b =>
@@ -667,7 +667,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProcessId");
 
-                    b.ToTable("Material");
+                    b.ToTable("Material", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Navigation.UserTraining", b =>
@@ -737,7 +737,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Process");
+                    b.ToTable("Process", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Product", b =>
@@ -787,7 +787,7 @@ namespace OpenQMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Product");
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Training", b =>
@@ -839,7 +839,7 @@ namespace OpenQMS.Migrations
 
                     b.HasIndex("CompletedBy");
 
-                    b.ToTable("Training");
+                    b.ToTable("Training", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

@@ -1,4 +1,10 @@
-OpenQMS
+OpenQMS.net
+
+Release 1.3.0
+- Remove DataType.Date limitation in models
+- Change "N/A" in not yet completed fields to "-"
+- Simplify Delete views
+- Enhance Details views
 
 Release 1.2.0
 - Migrate from .NET 6.0 to 8.0 and iText 7 to 8

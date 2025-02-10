@@ -1,6 +1,6 @@
 ﻿/*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -27,6 +27,7 @@ namespace OpenQMS.Models
     public class AppDocument
     {
         public int Id { get; set; }
+        [Display(Name = "ID")]
         public string DocumentId { get; set; }
         public string? GeneratedFrom { get; set; }
         public string Title { get; set; }
@@ -36,11 +37,13 @@ namespace OpenQMS.Models
         public string? FilePath { get; set; }
         public string FileType { get; set; }
         public string FileExtension { get; set; }
+        [Display(Name = "Authored By")]
         public string AuthoredBy { get; set; }
-        [DataType(DataType.Date)]
+        [Display(Name = "Authored On")]
         public DateTime AuthoredOn { get; set; }
+        [Display(Name = "Approved By")]
         public string? ApprovedBy { get; set; }
-        [DataType(DataType.Date)]
+        [Display(Name = "Approved On")]
         public DateTime? ApprovedOn { get; set; }
         public bool IsLocked { get; set; }
         public string? ExportFilePath { get; set; }

@@ -1,6 +1,6 @@
 ﻿/*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -29,10 +29,10 @@ namespace OpenQMS.Models
     public class Training
     {
         public int Id { get; set; }
+        [Display(Name = "ID")]
         public string TrainingId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        [DataType(DataType.Date)]
         public DateTime Date { get; set; }
         public int PolicyId { get; set; }
         public string PolicyTitle { get; set; }

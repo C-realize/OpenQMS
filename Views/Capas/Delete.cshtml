@@ -1,6 +1,6 @@
 ﻿@*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -34,7 +34,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 <div>
     <dl class="row">
         <dt class = "col-sm-2">
-            Id
+            @Html.DisplayNameFor(model => model.CapaId)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.CapaId)
@@ -53,6 +53,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             {
                 <a href="/Products/Details/@Model.ProductId">@Model.Product.Name</a>
             }
+            else
+            {
+                <a>-</a>
+            }
         </dd>
         <dt class="col-sm-2">
             Process
@@ -61,6 +65,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             @if (Model.Process != null)
             {
                 <a href="/Processes/Details/@Model.ProcessId">@Model.Process.Name</a>
+            }
+            else
+            {
+                <a>-</a>
             }
         </dd>
         <dt class="col-sm-2">
@@ -71,6 +79,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             {
                 <a href="/Assets/Details/@Model.AssetId">@Model.Asset.Name</a>
             }
+            else
+            {
+                <a>-</a>
+            }
         </dd>
         <dt class="col-sm-2">
             Material
@@ -79,6 +91,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             @if (Model.Material != null)
             {
                 <a href="/Materials/Details/@Model.MaterialId">@Model.Material.Name</a>
+            }
+            else
+            {
+                <a>-</a>
             }
         </dd>
         <dt class="col-sm-2">
@@ -89,8 +105,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             {
                 <a href="/Deviations/Details/@Model.DeviationId">@Model.Deviation.Title</a>
             }
+            else
+            {
+                <a>-</a>
+            }
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CorrectiveAction)
         </dt>
         <dd class = "col-sm-10">
@@ -114,67 +134,25 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.DeterminedOn)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Assessment)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Assessment)
+        <dd class="col-sm-10">
+            @(Model.Assessment ?? "-")
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.AssessedBy)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AssessedBy)
+        <dd class="col-sm-10">
+            @(Model.AssessedBy ?? "-")
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.AssessedOn)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AssessedOn)
+        <dd class="col-sm-10">
+            @(Model.AssessedOn.HasValue ? Model.AssessedOn : "-")
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AcceptedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AcceptedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AcceptedOn)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AcceptedOn)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Implementation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Implementation)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImplementedOn)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImplementedOn)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedBy)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ApprovedOn)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ApprovedOn)
-        </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Status)
         </dt>
         <dd class = "col-sm-10">
@@ -183,12 +161,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     </dl>
     
     <br />
-    <h2>Changes</h2>
+    <h4>Changes</h4>
     <div class="row">
         <table class="table table-border">
             <thead>
                 <tr>
-                    <th>Id</th>
+                    <th>ID</th>
                     <th>Title</th>
                 </tr>
             </thead>

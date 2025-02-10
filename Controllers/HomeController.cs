@@ -1,6 +1,6 @@
 ﻿/*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -52,6 +52,11 @@ namespace OpenQMS.Controllers
         }
 
         public IActionResult UnderConstruction()
+        {
+            return View();
+        }
+
+        public IActionResult UpgradePlan()
         {
             return View();
         }

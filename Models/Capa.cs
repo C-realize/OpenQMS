@@ -1,6 +1,6 @@
 ﻿/*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -28,6 +28,7 @@ namespace OpenQMS.Models
     public class Capa
     {
         public int Id { get; set; }
+        [Display(Name = "ID")]
         public string CapaId { get; set; }
         public int? ProductId { get; set; }
         [ForeignKey("ProductId")]
@@ -46,24 +47,36 @@ namespace OpenQMS.Models
         public virtual Deviation? Deviation { get; set; }
         public virtual ICollection<Change>? Changes { get; set; }
         public string Title { get; set; }
+        [Display(Name = "Corrective Action")]
         public string CorrectiveAction { get; set; }
+        [Display(Name = "Preventive Action")]
         public string PreventiveAction { get; set; }
+        [Display(Name = "Determined By")]
         public string DeterminedBy { get; set; }
-        [DataType(DataType.Date)]
+        [Display(Name = "Determined On")]
+        //[DataType(DataType.Date)]
         public DateTime DeterminedOn { get; set; }
         public string? Assessment { get; set; }
+        [Display(Name = "Assessed By")]
         public string? AssessedBy { get; set; }
-        [DataType(DataType.Date)]
+        [Display(Name = "Assessed On")]
+        //[DataType(DataType.Date)]
         public DateTime? AssessedOn { get; set; }
+        [Display(Name = "Accepted By")]
         public string? AcceptedBy { get; set; }
-        [DataType(DataType.Date)]
+        [Display(Name = "Accepted On")]
+        //[DataType(DataType.Date)]
         public DateTime? AcceptedOn { get; set; }
         public string? Implementation { get; set; }
+        [Display(Name = "Implemented By")]
         public string? ImplementedBy { get; set; }
-        [DataType(DataType.Date)]
+        [Display(Name = "Implemented On")]
+        //[DataType(DataType.Date)]
         public DateTime? ImplementedOn { get; set; }
+        [Display(Name = "Approved By")]
         public string? ApprovedBy { get; set; }
-        [DataType(DataType.Date)]
+        [Display(Name = "Approved On")]
+        //[DataType(DataType.Date)]
         public DateTime? ApprovedOn { get; set; }
         public string? ExportFilePath { get; set; }
         public CapaStatus Status { get; set; }
