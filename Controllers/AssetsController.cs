@@ -247,7 +247,7 @@ namespace OpenQMS.Controllers
                     {
                         using (var transaction = _context.Database.BeginTransaction())
                         {
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Asset ON;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Asset ON;"); // Required for SQL Server
                             asset.Id = _context.Asset.Max(m => m.Id) + 1;
                             asset.Status = AssetStatus.Draft;
                             asset.ApprovedBy = null;
@@ -256,7 +256,7 @@ namespace OpenQMS.Controllers
                             asset.IsLocked = false;
                             _context.Add(asset);
                             _context.SaveChanges();
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Asset OFF;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Asset OFF;"); // Required for SQL Server
                             transaction.Commit();
                         }
 

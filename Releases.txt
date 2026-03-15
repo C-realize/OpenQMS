@@ -1,10 +1,17 @@
 OpenQMS.net
 
+Release 1.4.0
+- Add new menu items
+- Add in-app instructions
+- Patches and fixes
+
 Release 1.3.0
+- Add chart view (doughnut) when no data
 - Remove DataType.Date limitation in models
 - Change "N/A" in not yet completed fields to "-"
 - Simplify Delete views
 - Enhance Details views
+- Add additional menu options that are available in the Business edition
 
 Release 1.2.0
 - Migrate from .NET 6.0 to 8.0 and iText 7 to 8

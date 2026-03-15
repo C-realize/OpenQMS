@@ -244,7 +244,7 @@ namespace OpenQMS.Controllers
                     {
                         using (var transaction = _context.Database.BeginTransaction())
                         {
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Product ON;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Product ON;"); // Required for SQL Server
                             product.Id = _context.Product.Max(m => m.Id) + 1;
                             product.Status = ProductStatus.Draft;
                             product.ApprovedBy = null;
@@ -253,7 +253,7 @@ namespace OpenQMS.Controllers
                             product.IsLocked = false;
                             _context.Add(product);
                             _context.SaveChanges();
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Product OFF;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Product OFF;"); // Required for SQL Server
                             transaction.Commit();
                         }
 

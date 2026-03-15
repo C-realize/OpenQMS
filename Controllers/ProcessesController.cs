@@ -251,7 +251,7 @@ namespace OpenQMS.Controllers
                     {
                         using (var transaction = _context.Database.BeginTransaction())
                         {
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Process ON;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Process ON;"); //Required for SQL Server
                             process.Id = _context.Process.Max(m => m.Id) + 1;
                             process.Status = ProcessStatus.Draft;
                             process.ApprovedBy = string.Empty;
@@ -260,7 +260,7 @@ namespace OpenQMS.Controllers
                             process.IsLocked = false;
                             _context.Add(process);
                             _context.SaveChanges();
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Process OFF;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Process OFF;"); //Required for SQL Server
                             transaction.Commit();
                         }
 

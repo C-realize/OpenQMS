@@ -1,6 +1,6 @@
 ﻿@*
 This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2025  C-realize IT Services SRL (https://www.c-realize.com)
+Copyright (C) 2026  C-realize IT Services SRL (https://www.c-realize.com)
 
 This program is offered under a commercial and under the AGPL license.
 For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
@@ -42,6 +42,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                         <li class="nav-item dropdown">
                             <a class="quality nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Quality <span class="caret"></span></a>
                             <ul class="dropdown-menu">
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Events</a></li>
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Changes" asp-action="Index">Changes</a></li>
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Deviations" asp-action="Index">Deviations</a></li>
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Capas" asp-action="Index">CAPA</a></li>
@@ -82,7 +83,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                                         <a class="nav-link text-dark" asp-area="" asp-controller="AppRoles" asp-action="Index">Roles</a>
                                     </li>
                                 }
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Curricula</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Courses</a></li>
                                 <li><a class="nav-link text-dark" asp-area="" asp-controller="Trainings" asp-action="Index">Trainings</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Organizations</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Sites</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Departments</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -90,6 +96,14 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Settings</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="configuration nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Configuration <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Permissions</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Product Types</a></li>
+                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Event Types</a></li>
+                            </ul>
                         </li>
                     </ul>
                     <ul class="navbar-nav">

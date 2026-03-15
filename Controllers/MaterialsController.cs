@@ -253,7 +253,7 @@ namespace OpenQMS.Controllers
                         }
                         using (var transaction = _context.Database.BeginTransaction())
                         {
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Material ON;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Material ON;"); // Required for SQL Server
                             material.Id = _context.Material.Max(m => m.Id) + 1;
                             material.Status = MaterialStatus.Draft;
                             material.ApprovedBy = null;
@@ -262,7 +262,7 @@ namespace OpenQMS.Controllers
                             material.IsLocked = false;
                             _context.Add(material);
                             _context.SaveChanges();
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Material OFF;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT Material OFF;"); // Required for SQL Server
                             transaction.Commit();
                         }
 

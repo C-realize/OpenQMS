@@ -472,14 +472,14 @@ namespace OpenQMS.Controllers
                     {
                         using (var transaction = _context.Database.BeginTransaction())
                         {
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument ON;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument ON;"); //SQL Server
                             document.Id = _context.AppDocument.Max(m => m.Id) + 1;
                             document.Status = AppDocument.DocumentStatus.Draft;
                             document.GeneratedFrom = id.ToString();
                             document.IsLocked = false;
                             _context.Add(document);
                             _context.SaveChanges();
-                            _context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument OFF;");
+                            //_context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT AppDocument OFF;"); //SQL Server
                             transaction.Commit();
                         }
                         AppDocument document1 = await _context.AppDocument.FirstOrDefaultAsync(m => m.Id == id);

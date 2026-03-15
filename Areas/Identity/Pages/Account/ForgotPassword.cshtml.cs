@@ -17,6 +17,7 @@ using OpenQMS.Models;
 
 namespace OpenQMS.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class ForgotPasswordModel : PageModel
     {
         private readonly UserManager<AppUser> _userManager;
