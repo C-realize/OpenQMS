@@ -27,7 +27,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>User access</h1>
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert alert-info" role="status">@statusMessage</div>
+}
 
 <h4>Users</h4>
 <hr />
@@ -41,8 +46,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                 Email
             </th>
             <th>
-                Role
+                Roles
             </th>
+            <th>Email confirmed</th>
             <th></th>
         </tr>
     </thead>
@@ -58,6 +64,16 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             <td>
                 @Html.DisplayFor(modelItem => item.Roles)
             </td>
+            <td>@(item.EmailConfirmed ? "Yes" : "No")</td>
+            <td>
+                <a asp-action="EditRoles" asp-route-id="@item.UserId">Edit roles</a>
+                @if (User.IsInRole(Constants.AdministratorsRole) && !item.EmailConfirmed)
+                {
+                    <form asp-action="ResendInvitation" asp-route-id="@item.UserId" method="post" class="d-inline">
+                        <button class="btn btn-link btn-sm" type="submit">Resend invitation</button>
+                    </form>
+                }
+            </td>
         </tr>
         }
     </tbody>
@@ -66,6 +82,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 @if(User.IsInRole(Constants.AdministratorsRole))
 {
     <p>
-        <a asp-area="Identity" asp-page="/Account/Register">Create New</a>
+        <a asp-action="Invite">Invite user</a>
     </p>
 }

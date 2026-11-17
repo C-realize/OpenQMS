@@ -1,0 +1,90 @@
+@model OpenQMS.Models.ControlledDocument
+@inject OpenQMS.Services.DocumentAuthorizationService DocumentAuthorization
+
+@{
+    ViewData["Title"] = Model.DocumentId;
+}
+
+<h1>@Model.DocumentId — @Model.Title</h1>
+<p>@Model.Description</p>
+<p>Training required for effective revisions: @(Model.RequiresTraining ? "Yes" : "No")</p>
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<div class="mb-3">
+    @if (await DocumentAuthorization.HasPermissionAsync(User, Model.Id, OpenQMS.Services.DocumentPermission.Draft))
+    {
+        <a class="btn btn-primary" asp-action="CreateRevision" asp-route-id="@Model.Id">Upload a revision</a>
+    }
+    @if (User.IsInRole(OpenQMS.Authorization.Constants.AdministratorsRole))
+    {
+        <a class="btn btn-outline-secondary" asp-action="EditMetadata" asp-route-id="@Model.Id">Edit register metadata</a>
+        <a class="btn btn-outline-secondary" asp-action="EditAccess" asp-route-id="@Model.Id">Role access</a>
+    }
+</div>
+
+<h2>Revision history</h2>
+<table class="table">
+    <thead>
+        <tr><th>Revision</th><th>Status</th><th>Change summary</th><th>Authored</th><th>Reviewed</th><th>Approved</th><th>Effective</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var revision in Model.Revisions.OrderByDescending(item => item.AuthoredAtUtc))
+    {
+        <tr>
+            <td>@revision.Revision</td>
+            <td>@revision.Status</td>
+            <td>@revision.ChangeSummary</td>
+            <td>@revision.AuthoredAtUtc.ToString("u")</td>
+            <td>@(revision.ReviewedAtUtc?.ToString("u") ?? "—")</td>
+            <td>@(revision.ApprovedAtUtc?.ToString("u") ?? "—")</td>
+            <td>@(revision.EffectiveAtUtc?.ToString("u") ?? "—")</td>
+            <td>
+                @if (revision.FileContent is not null)
+                {
+                    <a asp-action="Download" asp-route-revisionId="@revision.Id">Download</a>
+                }
+                @if (revision.Status == OpenQMS.Models.DocumentRevisionStatus.Draft
+                    && await DocumentAuthorization.HasPermissionAsync(User, Model.Id, OpenQMS.Services.DocumentPermission.Draft))
+                {
+                    <form asp-action="SubmitForReview" method="post" class="d-inline">
+                        <input type="hidden" name="revisionId" value="@revision.Id" />
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Submit for review</button>
+                    </form>
+                }
+                @if (revision.Status == OpenQMS.Models.DocumentRevisionStatus.InReview
+                    && await DocumentAuthorization.HasPermissionAsync(User, Model.Id, OpenQMS.Services.DocumentPermission.Review))
+                {
+                    <form asp-action="Review" method="post" class="d-inline">
+                        <input type="hidden" name="revisionId" value="@revision.Id" />
+                        <input type="hidden" name="accepted" value="true" />
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Record review</button>
+                    </form>
+                    <form asp-action="Review" method="post" class="d-inline">
+                        <input type="hidden" name="revisionId" value="@revision.Id" />
+                        <input type="hidden" name="accepted" value="false" />
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Reject</button>
+                    </form>
+                }
+                @if (revision.Status == OpenQMS.Models.DocumentRevisionStatus.InReview
+                    && revision.ReviewedAtUtc.HasValue
+                    && await DocumentAuthorization.HasPermissionAsync(User, Model.Id, OpenQMS.Services.DocumentPermission.Approve))
+                {
+                    <form asp-action="Approve" method="post" class="d-inline">
+                        <input type="hidden" name="revisionId" value="@revision.Id" />
+                        <label class="visually-hidden" for="effective-@revision.Id">Effective date (UTC)</label>
+                        <input id="effective-@revision.Id" name="effectiveAtUtc" type="datetime-local"
+                               value="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-ddTHH:mm")" required />
+                        <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<a asp-action="Index">Back to register</a>

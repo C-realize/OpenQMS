@@ -33,7 +33,7 @@ namespace OpenQMS.Authorization
         public static readonly string RejectOperationName = "Reject";
         public static readonly string CompleteOperationName = "Complete";
 
-        public static readonly string AdministratorsRole = "Administrator";
-        public static readonly string ManagersRole = "Manager";
+        public const string AdministratorsRole = "System Administrator";
+        public const string ManagersRole = "Quality Manager / Document Controller";
     }
 }

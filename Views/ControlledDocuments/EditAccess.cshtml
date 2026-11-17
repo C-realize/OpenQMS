@@ -1,0 +1,42 @@
+@model OpenQMS.Models.ViewModels.DocumentAccessEditorViewModel
+
+@{
+    ViewData["Title"] = "Document role access";
+}
+
+<h1>Role access — @Model.DocumentNumber</h1>
+<p>@Model.DocumentTitle</p>
+<p>Approve, review, and draft grants automatically include read access. Review these proposed grants against company responsibilities before go-live.</p>
+
+<form asp-action="EditAccess" method="post">
+    <input type="hidden" asp-for="DocumentId" />
+    <input type="hidden" asp-for="DocumentNumber" />
+    <input type="hidden" asp-for="DocumentTitle" />
+    <table class="table">
+        <thead><tr><th>Role</th><th>Read</th><th>Draft</th><th>Review</th><th>Approve</th></tr></thead>
+        <tbody>
+        @for (var index = 0; index < Model.Roles.Count; index++)
+        {
+            <tr>
+                <td>
+                    @Model.Roles[index].RoleName
+                    <input type="hidden" asp-for="Roles[index].RoleName" />
+                </td>
+                <td><input asp-for="Roles[index].CanRead" /></td>
+                @if (Model.Roles[index].RoleName == "Auditor")
+                {
+                    <td>Read-only</td><td>Read-only</td><td>Read-only</td>
+                }
+                else
+                {
+                    <td><input asp-for="Roles[index].CanDraft" /></td>
+                    <td><input asp-for="Roles[index].CanReview" /></td>
+                    <td><input asp-for="Roles[index].CanApprove" /></td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" type="submit">Save access</button>
+    <a class="btn btn-link" asp-action="Details" asp-route-id="@Model.DocumentId">Cancel</a>
+</form>

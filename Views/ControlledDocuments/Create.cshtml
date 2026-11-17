@@ -1,0 +1,37 @@
+@model OpenQMS.Models.ViewModels.DocumentRegisterInput
+
+@{
+    ViewData["Title"] = "Add register item";
+}
+
+<h1>Add register item</h1>
+<p>Register metadata only; upload controlled content as a separate draft revision.</p>
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="DocumentId" class="form-label"></label>
+        <input asp-for="DocumentId" class="form-control" />
+        <span asp-validation-for="DocumentId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="RequiresTraining" class="form-check-input" />
+        <label asp-for="RequiresTraining" class="form-check-label">Assign training when a revision becomes effective</label>
+    </div>
+    <div class="mb-3">
+        <label asp-for="TrainingDueDays" class="form-label">Training due window in days (optional)</label>
+        <input asp-for="TrainingDueDays" class="form-control" />
+        <span asp-validation-for="TrainingDueDays" class="text-danger"></span>
+    </div>
+    <button class="btn btn-primary" type="submit">Create register item</button>
+    <a class="btn btn-link" asp-action="Index">Cancel</a>
+</form>

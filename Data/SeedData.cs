@@ -1,133 +1,151 @@
-﻿/*
-This file is part of the OpenQMS.net project (https://github.com/C-realize/OpenQMS).
-Copyright (C) 2022-2024  C-realize IT Services SRL (https://www.c-realize.com)
-
-This program is offered under a commercial and under the AGPL license.
-For commercial licensing, contact us at https://www.c-realize.com/contact.  For AGPL licensing, see below.
-
-AGPL:
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see http://www.gnu.org/licenses/.
-*/
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenQMS.Authorization;
 using OpenQMS.Models;
 
-namespace OpenQMS.Data
+namespace OpenQMS.Data;
+
+public static class SeedData
 {
-    public class SeedData
+    private static readonly (string Name, string Description)[] StarterRoles =
+    [
+        (Constants.AdministratorsRole, "Full system configuration and access administration."),
+        (Constants.ManagersRole, "Document control and quality-system administration; review role grants before use."),
+        ("Process Owner / Approver", "May be granted document approval authority after local review."),
+        ("Training Coordinator", "May be granted training administration authority after local review."),
+        ("Employee", "May read assigned effective documents and complete assigned training."),
+        ("Auditor", "Read-only access when explicitly granted.")
+    ];
+
+    private static readonly (string Id, string Title)[] StarterDocuments =
+    [
+        ("MAPA-01", "Przewodnik i lista dokumentów"),
+        ("KJ-01", "Księga jakości, polityka i zakres systemu"),
+        ("SOP-01", "Nadzór nad dokumentami, zapisami i zmianami"),
+        ("SOP-02", "Kwalifikacja dostawców i komponentów"),
+        ("SOP-03", "Kompatybilność PRP i zarządzanie ryzykiem"),
+        ("SOP-04", "Własny magazyn, środowisko i przyjęcie dostaw"),
+        ("SOP-05", "Kompletacja, pakowanie, weryfikacja i walidacja"),
+        ("SOP-06", "Etykiety, UDI, EUDAMED i zwolnienie partii"),
+        ("SOP-07", "Identyfikowalność, dystrybucja i wycofanie"),
+        ("SOP-08", "Reklamacje, incydenty, niezgodności i CAPA"),
+        ("SOP-09", "Kompetencje, audyty i przegląd zarządzania"),
+        ("SOP-10", "Nadzór regulacyjny, informacje i reklama"),
+        ("DT-PRP-01", "Dokumentacja zestawu PRP KIT"),
+        ("OSW-22-01", "Oświadczenie podmiotu zestawiającego"),
+        ("FORM-A", "Formularze dostaw, komponentów i magazynu"),
+        ("FORM-B", "Formularze kompatybilności, ryzyka i walidacji"),
+        ("FORM-C", "Formularze partii, etykiet, UDI i zwolnienia"),
+        ("FORM-D", "Formularze bezpieczeństwa i zarządzania jakością")
+    ];
+
+    public static async Task Initialize(IServiceProvider serviceProvider, string? bootstrapAdminEmail)
     {
-        public static async Task Initialize(IServiceProvider serviceProvider, string testUserPw = "")
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<AppRole>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
+        var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+        foreach (var role in StarterRoles)
         {
-            using (var context = new ApplicationDbContext(
-                serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
+            if (await roleManager.FindByNameAsync(role.Name) is null)
             {
-                // Password is set with the following:
-                // dotnet user-secrets set SeedUserPW <pw>
-                // The admin user can do anything
-
-                var adminID = await EnsureUser(serviceProvider, testUserPw, "Administrator", "admin@c-realize.com");
-                var adminDescription = "Administrators have access to all features.";
-                await EnsureRole(serviceProvider, adminID, Constants.AdministratorsRole, adminDescription);
-
-                var managerID = await EnsureUser(serviceProvider, testUserPw, "Manager", "manager@c-realize.com");
-                var managerDescription = "Managers can view and approve documents. They can also manage trainings.";
-                await EnsureRole(serviceProvider, managerID, Constants.ManagersRole, managerDescription);
-
-                SeedDB(context, testUserPw);
-            }
-        }
-
-        private static async Task<int> EnsureUser(IServiceProvider serviceProvider,
-                                            string testUserPw, string UserName, string Email)
-        {
-            var userManager = serviceProvider.GetService<UserManager<AppUser>>();
-
-            var user = await userManager.FindByNameAsync(UserName);
-            if (user == null)
-            {
-                user = new AppUser
+                var result = await roleManager.CreateAsync(new AppRole
                 {
-                    FirstName = UserName,
-                    LastName = UserName,
-                    UserName = UserName,
-                    Email = Email,
-                    EmailConfirmed = true
+                    Name = role.Name,
+                    Description = role.Description
+                });
+                EnsureSucceeded(result, $"creating role '{role.Name}'");
+            }
+        }
+
+        await RemoveLegacyRoleAsync(roleManager, userManager, context, "Administrator");
+        await RemoveLegacyRoleAsync(roleManager, userManager, context, "Manager");
+
+        if (!string.IsNullOrWhiteSpace(bootstrapAdminEmail))
+        {
+            var admin = await userManager.FindByEmailAsync(bootstrapAdminEmail);
+            if (admin is null)
+            {
+                admin = new AppUser
+                {
+                    FirstName = "System",
+                    LastName = "Administrator",
+                    UserName = bootstrapAdminEmail,
+                    Email = bootstrapAdminEmail,
+                    EmailConfirmed = false
                 };
-
-                await userManager.CreateAsync(user, testUserPw);
+                var createResult = await userManager.CreateAsync(admin);
+                EnsureSucceeded(createResult, "creating the configured bootstrap administrator");
             }
 
-            if (user == null)
+            if (!await userManager.IsInRoleAsync(admin, Constants.AdministratorsRole))
             {
-                throw new Exception("The password is probably not strong enough!");
+                var roleResult = await userManager.AddToRoleAsync(admin, Constants.AdministratorsRole);
+                EnsureSucceeded(roleResult, "assigning the configured bootstrap administrator role");
             }
-
-            return user.Id;
         }
 
-        private static async Task<IdentityResult> EnsureRole(IServiceProvider serviceProvider,
-                                                                      int uid, string role, string roleDescription)
+        else if (serviceProvider.GetRequiredService<IWebHostEnvironment>().IsProduction()
+            && (await userManager.GetUsersInRoleAsync(Constants.AdministratorsRole)).Count == 0)
         {
-            var roleManager = serviceProvider.GetService<RoleManager<AppRole>>();
-
-            if (roleManager == null)
-            {
-                throw new Exception("roleManager null");
-            }
-
-            IdentityResult IR;
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                IR = await roleManager.CreateAsync
-                (
-                    new AppRole 
-                    { 
-                        Name = role,
-                        Description = roleDescription
-                    }
-                );
-            }
-
-            var userManager = serviceProvider.GetService<UserManager<AppUser>>();
-
-            //if (userManager == null)
-            //{
-            //    throw new Exception("userManager is null");
-            //}
-
-            var user = await userManager.FindByIdAsync(uid.ToString());
-
-            if (user == null)
-            {
-                throw new Exception("The testUserPw password was probably not strong enough!");
-            }
-
-            IR = await userManager.AddToRoleAsync(user, role);
-
-            return IR;
+            throw new InvalidOperationException("Configure BootstrapAdmin:Email for initial administrator setup, or ensure an administrator already exists.");
         }
 
-        public static void SeedDB(ApplicationDbContext context, string adminID)
+        var existingDocumentIds = await context.ControlledDocuments
+            .Select(document => document.DocumentId)
+            .ToListAsync();
+        foreach (var (id, title) in StarterDocuments)
         {
-            if (context.AppDocument.Any())
+            if (!existingDocumentIds.Contains(id, StringComparer.OrdinalIgnoreCase))
             {
-                return;   // DB has been seeded
+                context.ControlledDocuments.Add(new ControlledDocument
+                {
+                    DocumentId = id,
+                    Title = title
+                });
             }
-
-            context.SaveChanges();
         }
+
+        await context.SaveChangesAsync();
+    }
+
+    private static void EnsureSucceeded(IdentityResult result, string operation)
+    {
+        if (!result.Succeeded)
+        {
+            var errors = string.Join("; ", result.Errors.Select(error => error.Description));
+            throw new InvalidOperationException($"Identity failed while {operation}: {errors}");
+        }
+    }
+
+    private static async Task RemoveLegacyRoleAsync(
+        RoleManager<AppRole> roleManager,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext context,
+        string roleName)
+    {
+        var oldRole = await roleManager.FindByNameAsync(roleName);
+        if (oldRole is null)
+        {
+            return;
+        }
+
+        var users = await userManager.GetUsersInRoleAsync(roleName);
+        foreach (var user in users)
+        {
+            var result = await userManager.RemoveFromRoleAsync(user, roleName);
+            EnsureSucceeded(result, $"removing legacy administrator access from user {user.Id}");
+            context.QmsAuditEvents.Add(new QmsAuditEvent
+            {
+                Action = "LegacyRoleRemoved",
+                EntityType = nameof(AppUser),
+                EntityId = user.Id.ToString(),
+                Details = roleName
+            });
+        }
+
+        var deleteResult = await roleManager.DeleteAsync(oldRole);
+        EnsureSucceeded(deleteResult, $"removing legacy role '{roleName}'");
+        await context.SaveChangesAsync();
     }
 }

@@ -138,7 +138,7 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Trainings/Create
-        [Authorize(Roles = "Administrator,Manager")]
+        [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         public async Task<IActionResult> Create()
         {
             var documents = from d in _context.AppDocument
@@ -146,7 +146,7 @@ namespace OpenQMS.Controllers
             documents = documents.Where(d => d.Status == AppDocument.DocumentStatus.Approved);
 
             ViewData["Policies"] = documents.ToList();
-            ViewData["Trainer"] = await _userManager.GetUsersInRoleAsync("Manager");
+            ViewData["Trainer"] = await _userManager.GetUsersInRoleAsync(Constants.ManagersRole);
             ViewData["Roles"] = _roleManager.Roles.ToList();
 
             return View();
@@ -157,7 +157,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrator,Manager")]
+        [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         public async Task<IActionResult> Create([Bind("Id,TrainingId,Name,Description,Date,PolicyId,PolicyTitle,TrainerId,TrainerEmail,Trainees")] Training training, string roles)
         {
             try
@@ -209,7 +209,7 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Trainings/Edit/5
-        [Authorize(Roles = "Administrator,Manager")]
+        [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -262,7 +262,7 @@ namespace OpenQMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrator,Manager")]
+        [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         public async Task<IActionResult> Edit(int? id, string[] selectedTrainees)
         {
             if (id == 0)
@@ -343,7 +343,7 @@ namespace OpenQMS.Controllers
         }
 
         // GET: Trainings/Delete/5
-        [Authorize(Roles = "Administrator,Manager")]
+        [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -371,7 +371,7 @@ namespace OpenQMS.Controllers
         // POST: Trainings/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Administrator,Manager")]
+        [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var training = await _context.Training.FindAsync(id);
@@ -533,7 +533,7 @@ namespace OpenQMS.Controllers
             }
         }
 
-        [Authorize(Roles = "Administrator,Manager")]
+        [Authorize(Roles = Constants.AdministratorsRole + "," + Constants.ManagersRole)]
         public async Task<IActionResult> ExportTrainingAttendance(int id)
         {
             string path = Directory.GetCurrentDirectory() + "/Reports/TrainingAttendanceReport.rdl";

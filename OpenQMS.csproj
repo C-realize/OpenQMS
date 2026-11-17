@@ -11,6 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="OpenQMS.Tests\**\*.cs" />
+    <Content Remove="OpenQMS.Tests\**" />
+    <EmbeddedResource Remove="OpenQMS.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Reports\AssetDetailReport.rdlc" />
     <None Remove="Reports\CapaDetailReport.rdlc" />
     <None Remove="Reports\ChangeDetailReport.rdlc" />

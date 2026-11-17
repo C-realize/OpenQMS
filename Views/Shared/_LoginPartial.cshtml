@@ -39,72 +39,30 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="quality nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Quality <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Events</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Changes" asp-action="Index">Changes</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Deviations" asp-action="Index">Deviations</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Capas" asp-action="Index">CAPA</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Complaints</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Risks</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Audits</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Maintenance</a></li>
-                            </ul>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="ControlledDocuments" asp-action="Index">Controlled documents</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="TrainingMatrix" asp-action="Index">Training matrix</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Processes" asp-action="Index">Processes</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="plant nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Plant <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Assets" asp-action="Index">Assets</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Materials" asp-action="Index">Materials</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="AppDocuments" asp-action="Index">Policies</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="people nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">People <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
-                                {
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="AppUsers" asp-action="Index">Users</a>
-                                    </li>
-                                }
-                                @if (User.IsInRole(Constants.AdministratorsRole))
-                                {
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="AppRoles" asp-action="Index">Roles</a>
-                                    </li>
-                                }
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Curricula</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Courses</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Trainings" asp-action="Index">Trainings</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Organizations</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Sites</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Departments</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Reports</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Settings</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="configuration nav-link text-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">Configuration <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Permissions</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Product Types</a></li>
-                                <li><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UpgradePlan">Event Types</a></li>
-                            </ul>
-                        </li>
+                        @if (User.IsInRole(Constants.AdministratorsRole))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ControlledDocuments" asp-action="Audit">Audit trail</a>
+                            </li>
+                        }
+                        @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="AppUsers" asp-action="Index">User access</a>
+                            </li>
+                        }
+                        @if (User.IsInRole(Constants.AdministratorsRole))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="AppRoles" asp-action="Index">Roles</a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav">
                         <li class="nav-item">
