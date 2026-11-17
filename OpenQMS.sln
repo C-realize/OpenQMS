@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenQMS", "OpenQMS.csproj", "{309A04C9-BFCC-4E7A-A9A3-82B938B92D8A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenQMS.Tests", "OpenQMS.Tests\OpenQMS.Tests.csproj", "{AF3B5531-F31C-4D47-91ED-038237476027}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{309A04C9-BFCC-4E7A-A9A3-82B938B92D8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{309A04C9-BFCC-4E7A-A9A3-82B938B92D8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{309A04C9-BFCC-4E7A-A9A3-82B938B92D8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF3B5531-F31C-4D47-91ED-038237476027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF3B5531-F31C-4D47-91ED-038237476027}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF3B5531-F31C-4D47-91ED-038237476027}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF3B5531-F31C-4D47-91ED-038237476027}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

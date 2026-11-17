@@ -1,0 +1,66 @@
+@model IEnumerable<OpenQMS.Models.ViewModels.TrainingAssignmentListItem>
+
+@{
+    ViewData["Title"] = "Training matrix";
+    var canViewAll = ViewData["CanViewAll"] is true;
+    var currentUserId = (int)ViewData["CurrentUserId"]!;
+}
+
+<h1>Training matrix</h1>
+<p>@(canViewAll ? "Assignments for all users." : "Your assigned document training and acknowledgments.")</p>
+
+<table class="table">
+    <thead>
+        <tr><th>Employee</th><th>Document</th><th>Revision</th><th>Assigned</th><th>Due</th><th>Status</th><th>Completed</th><th>Evidence / acknowledgment</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var row in Model)
+    {
+        var assignment = row.Assignment;
+        <tr class="@(row.IsOverdue ? "table-danger" : "")">
+            <td>@row.TraineeName</td>
+            <td>@row.DocumentNumber — @row.DocumentTitle</td>
+            <td>@assignment.DocumentRevision.Revision</td>
+            <td>@assignment.AssignedAtUtc.ToString("yyyy-MM-dd")</td>
+            <td>@(assignment.DueAtUtc?.ToString("yyyy-MM-dd") ?? "Not set")</td>
+            <td>@(row.IsOverdue ? "Overdue" : assignment.Status.ToString())</td>
+            <td>@(assignment.CompletedAtUtc?.ToString("u") ?? "—")</td>
+            <td>
+                @assignment.CompletionEvidence
+                @if (assignment.AcknowledgedAtUtc.HasValue)
+                {
+                    <div>Acknowledged @assignment.AcknowledgedAtUtc.Value.ToString("u")</div>
+                }
+            </td>
+            <td>
+                @if (assignment.TraineeId == currentUserId && assignment.Status == OpenQMS.Models.TrainingAssignmentStatus.Assigned)
+                {
+                    <form asp-action="Start" method="post">
+                        <input type="hidden" name="id" value="@assignment.Id" />
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Start</button>
+                    </form>
+                }
+                @if (assignment.TraineeId == currentUserId && assignment.Status != OpenQMS.Models.TrainingAssignmentStatus.Completed)
+                {
+                    <form asp-action="Complete" method="post">
+                        <input type="hidden" name="id" value="@assignment.Id" />
+                        <label class="visually-hidden" for="evidence-@assignment.Id">Completion evidence</label>
+                        <input id="evidence-@assignment.Id" name="CompletionEvidence" required maxlength="2000"
+                               class="form-control form-control-sm" placeholder="Completion evidence" />
+                        <button class="btn btn-sm btn-success mt-1" type="submit">Complete</button>
+                    </form>
+                }
+                @if (assignment.TraineeId == currentUserId
+                    && assignment.Status == OpenQMS.Models.TrainingAssignmentStatus.Completed
+                    && !assignment.AcknowledgedAtUtc.HasValue)
+                {
+                    <form asp-action="Acknowledge" method="post">
+                        <input type="hidden" name="id" value="@assignment.Id" />
+                        <button class="btn btn-sm btn-outline-success" type="submit">Acknowledge</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

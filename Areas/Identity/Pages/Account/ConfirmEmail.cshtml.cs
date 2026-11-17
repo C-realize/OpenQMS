@@ -12,16 +12,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using OpenQMS.Models;
+using OpenQMS.Services;
 
 namespace OpenQMS.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class ConfirmEmailModel : PageModel
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly DocumentWorkflowService _documentWorkflow;
 
-        public ConfirmEmailModel(UserManager<AppUser> userManager)
+        public ConfirmEmailModel(UserManager<AppUser> userManager, DocumentWorkflowService documentWorkflow)
         {
             _userManager = userManager;
+            _documentWorkflow = documentWorkflow;
         }
 
         /// <summary>
@@ -45,6 +49,10 @@ namespace OpenQMS.Areas.Identity.Pages.Account
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (result.Succeeded)
+            {
+                await _documentWorkflow.AssignCurrentTrainingToUserAsync(user.Id, actorId: null);
+            }
             StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
             return Page();
         }

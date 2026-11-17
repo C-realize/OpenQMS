@@ -1,0 +1,36 @@
+@model IEnumerable<OpenQMS.Models.ControlledDocument>
+
+@{
+    ViewData["Title"] = "Controlled documents";
+}
+
+<h1>Controlled documents</h1>
+<p>Only documents explicitly granted to your role are listed.</p>
+
+<table class="table">
+    <thead>
+        <tr><th>Document ID</th><th>Title</th><th>Current revision</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var document in Model)
+    {
+        var current = document.Revisions
+            .Where(revision => revision.Status == OpenQMS.Models.DocumentRevisionStatus.Effective)
+            .OrderByDescending(revision => revision.EffectiveAtUtc)
+            .FirstOrDefault();
+        <tr>
+            <td>@document.DocumentId</td>
+            <td>@document.Title</td>
+            <td>@(current?.Revision ?? "Not yet effective")</td>
+            <td>@(current?.Status.ToString() ?? "Register item")</td>
+            <td><a asp-action="Details" asp-route-id="@document.Id">Open</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (User.IsInRole(OpenQMS.Authorization.Constants.AdministratorsRole))
+{
+    <a class="btn btn-primary" asp-action="Create">Add register item</a>
+    <a class="btn btn-outline-secondary" asp-action="Audit">Audit trail</a>
+}

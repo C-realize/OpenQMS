@@ -24,11 +24,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OpenQMS.Authorization;
 using OpenQMS.Models;
 
 namespace OpenQMS.Controllers
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Constants.AdministratorsRole)]
     public class AppRolesController : Controller
     {
         private readonly RoleManager<AppRole> _roleManager;

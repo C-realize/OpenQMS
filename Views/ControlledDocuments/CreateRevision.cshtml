@@ -1,0 +1,25 @@
+@model OpenQMS.Models.ControlledDocument
+
+@{
+    ViewData["Title"] = "Upload revision";
+}
+
+<h1>Upload revision for @Model.DocumentId</h1>
+<p>@Model.Title</p>
+<form asp-action="CreateRevision" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label for="revision" class="form-label">Revision identifier</label>
+        <input id="revision" name="revision" class="form-control" required maxlength="24" />
+    </div>
+    <div class="mb-3">
+        <label for="changeSummary" class="form-label">Change summary</label>
+        <textarea id="changeSummary" name="changeSummary" class="form-control" required maxlength="2000"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="file" class="form-label">Source file</label>
+        <input id="file" name="file" type="file" class="form-control" required />
+    </div>
+    <button class="btn btn-primary" type="submit">Save draft revision</button>
+    <a class="btn btn-link" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+</form>

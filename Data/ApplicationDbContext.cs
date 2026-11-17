@@ -36,6 +36,11 @@ namespace OpenQMS.Data
         public DbSet<OpenQMS.Models.AppDocument> AppDocument { get; set; }
         public DbSet<OpenQMS.Models.Training> Training { get; set; }
         public DbSet<UserTraining> UserTraining { get; set; }
+        public DbSet<ControlledDocument> ControlledDocuments => Set<ControlledDocument>();
+        public DbSet<DocumentRevision> DocumentRevisions => Set<DocumentRevision>();
+        public DbSet<DocumentAccessGrant> DocumentAccessGrants => Set<DocumentAccessGrant>();
+        public DbSet<TrainingAssignment> TrainingAssignments => Set<TrainingAssignment>();
+        public DbSet<QmsAuditEvent> QmsAuditEvents => Set<QmsAuditEvent>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,7 +49,53 @@ namespace OpenQMS.Data
 
             modelBuilder.Entity<UserTraining>().HasKey(t => new { t.TraineeId, t.TrainingId });
 
-            
+            modelBuilder.Entity<ControlledDocument>()
+                .HasIndex(document => document.DocumentId)
+                .IsUnique();
+
+            modelBuilder.Entity<DocumentRevision>()
+                .HasIndex(revision => new { revision.ControlledDocumentId, revision.Revision })
+                .IsUnique();
+
+            modelBuilder.Entity<DocumentRevision>()
+                .HasIndex(revision => revision.ControlledDocumentId)
+                .IsUnique()
+                .HasFilter("\"Status\" = 3");
+
+            modelBuilder.Entity<DocumentRevision>()
+                .HasOne(revision => revision.ControlledDocument)
+                .WithMany(document => document.Revisions)
+                .HasForeignKey(revision => revision.ControlledDocumentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DocumentAccessGrant>()
+                .HasIndex(grant => new { grant.ControlledDocumentId, grant.RoleName })
+                .IsUnique();
+
+            modelBuilder.Entity<DocumentAccessGrant>()
+                .HasOne(grant => grant.ControlledDocument)
+                .WithMany()
+                .HasForeignKey(grant => grant.ControlledDocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TrainingAssignment>()
+                .HasIndex(assignment => new { assignment.DocumentRevisionId, assignment.TraineeId })
+                .IsUnique();
+
+            modelBuilder.Entity<TrainingAssignment>()
+                .HasOne(assignment => assignment.DocumentRevision)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.DocumentRevisionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TrainingAssignment>()
+                .HasOne(assignment => assignment.Trainee)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.TraineeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<QmsAuditEvent>()
+                .HasIndex(audit => audit.OccurredAtUtc);
         }
 
         public DbSet<OpenQMS.Models.Change>? Change { get; set; }

@@ -842,6 +842,221 @@ namespace OpenQMS.Migrations
                     b.ToTable("Training", (string)null);
                 });
 
+            modelBuilder.Entity("OpenQMS.Models.ControlledDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DocumentId")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("RequiresTraining")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("TrainingDueDays")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId")
+                        .IsUnique();
+
+                    b.ToTable("ControlledDocuments", (string)null);
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.DocumentAccessGrant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("CanApprove")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("CanDraft")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("CanRead")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("CanReview")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ControlledDocumentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ControlledDocumentId", "RoleName")
+                        .IsUnique();
+
+                    b.ToTable("DocumentAccessGrants", (string)null);
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.DocumentRevision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ApprovedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ApprovedByUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AuthoredByUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AuthoredAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ChangeSummary")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ControlledDocumentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("EffectiveAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("FileContent")
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(260)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Revision")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReviewedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ReviewedByUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ControlledDocumentId", "Revision")
+                        .IsUnique();
+
+                    b.HasIndex("ControlledDocumentId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 3");
+
+                    b.ToTable("DocumentRevisions", (string)null);
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.QmsAuditEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ActorUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OccurredAtUtc");
+
+                    b.ToTable("QmsAuditEvents", (string)null);
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.TrainingAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("AcknowledgedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CompletionEvidence")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("CompletedByUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("DueAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DocumentRevisionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TraineeId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentRevisionId", "TraineeId")
+                        .IsUnique();
+
+                    b.HasIndex("TraineeId");
+
+                    b.ToTable("TrainingAssignments", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("OpenQMS.Models.AppRole", null)
@@ -891,6 +1106,58 @@ namespace OpenQMS.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.ControlledDocument", b =>
+                {
+                    b.HasMany("OpenQMS.Models.DocumentRevision", "Revisions")
+                        .WithOne("ControlledDocument")
+                        .HasForeignKey("ControlledDocumentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Revisions");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.DocumentAccessGrant", b =>
+                {
+                    b.HasOne("OpenQMS.Models.ControlledDocument", "ControlledDocument")
+                        .WithMany()
+                        .HasForeignKey("ControlledDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ControlledDocument");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.DocumentRevision", b =>
+                {
+                    b.HasOne("OpenQMS.Models.ControlledDocument", "ControlledDocument")
+                        .WithMany("Revisions")
+                        .HasForeignKey("ControlledDocumentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ControlledDocument");
+                });
+
+            modelBuilder.Entity("OpenQMS.Models.TrainingAssignment", b =>
+                {
+                    b.HasOne("OpenQMS.Models.AppUser", "Trainee")
+                        .WithMany()
+                        .HasForeignKey("TraineeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OpenQMS.Models.DocumentRevision", "DocumentRevision")
+                        .WithMany()
+                        .HasForeignKey("DocumentRevisionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Trainee");
+
+                    b.Navigation("DocumentRevision");
                 });
 
             modelBuilder.Entity("OpenQMS.Models.Asset", b =>

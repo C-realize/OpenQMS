@@ -1,0 +1,24 @@
+@model IEnumerable<OpenQMS.Models.QmsAuditEvent>
+
+@{
+    ViewData["Title"] = "Audit trail";
+}
+
+<h1>Audit trail</h1>
+<p>Most recent 500 controlled-document and training events.</p>
+<table class="table">
+    <thead><tr><th>Time (UTC)</th><th>Actor ID</th><th>Action</th><th>Entity</th><th>Entity ID</th><th>Details</th></tr></thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.OccurredAtUtc.ToString("u")</td>
+            <td>@(item.ActorUserId?.ToString() ?? "System")</td>
+            <td>@item.Action</td>
+            <td>@item.EntityType</td>
+            <td>@item.EntityId</td>
+            <td>@item.Details</td>
+        </tr>
+    }
+    </tbody>
+</table>
